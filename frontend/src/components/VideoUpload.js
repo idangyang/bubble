@@ -6,6 +6,7 @@ import './VideoUpload.css';
 const VideoUpload = ({ onUploadSuccess }) => {
   const navigate = useNavigate();
   const [file, setFile] = useState(null);
+  const [thumbnail, setThumbnail] = useState(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -21,6 +22,13 @@ const VideoUpload = ({ onUploadSuccess }) => {
     }
   };
 
+  const handleThumbnailChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setThumbnail(selectedFile);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) {
@@ -32,6 +40,9 @@ const VideoUpload = ({ onUploadSuccess }) => {
     formData.append('video', file);
     formData.append('title', title);
     formData.append('description', description);
+    if (thumbnail) {
+      formData.append('thumbnail', thumbnail);
+    }
 
     setUploading(true);
     setProgress(0);
@@ -83,6 +94,19 @@ const VideoUpload = ({ onUploadSuccess }) => {
             className="file-input"
           />
           {file && <p className="file-name">已选择: {file.name}</p>}
+        </div>
+
+        <div className="form-group">
+          <label>选择封面图片（可选）</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleThumbnailChange}
+            disabled={uploading}
+            className="file-input"
+          />
+          {thumbnail && <p className="file-name">已选择: {thumbnail.name}</p>}
+          <p className="hint">如果不上传封面，将随机使用视频某一帧作为封面</p>
         </div>
 
         <div className="form-group">

@@ -6,8 +6,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    trim: true,
-    minlength: 3
+    trim: true
   },
   email: {
     type: String,
@@ -19,7 +18,7 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    minlength: 6
+    minlength: 4
   },
   avatar: {
     type: String,
@@ -28,6 +27,14 @@ const userSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  isDeactivated: {
+    type: Boolean,
+    default: false
+  },
+  deactivatedAt: {
+    type: Date,
+    default: null
   }
 });
 

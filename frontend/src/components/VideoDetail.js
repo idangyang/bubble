@@ -21,6 +21,7 @@ const VideoDetail = () => {
   const [danmakuColor, setDanmakuColor] = useState('#FFFFFF');
   const [commentText, setCommentText] = useState('');
   const [lastTime, setLastTime] = useState(0);
+  const shownDanmakusRef = useRef(new Set());
 
   useEffect(() => {
     fetchVideoData();
@@ -79,16 +80,21 @@ const VideoDetail = () => {
       // 弹幕应该在当前时间点显示
       const shouldShow = danmaku.time >= lastTime && danmaku.time <= currentTime;
 
-      if (shouldShow || timeJump) {
-        // 如果是时间跳跃，只显示当前时间点附近的弹幕
-        if (timeJump) {
-          if (Math.abs(danmaku.time - currentTime) < 0.5) {
+      // 检查这条弹幕是否已经显示过
+      if (!shownDanmakusRef.current.has(danmaku._id)) {
+        if (shouldShow || timeJump) {
+          // 如果是时间跳跃，只显示当前时间点附近的弹幕
+          if (timeJump) {
+            if (Math.abs(danmaku.time - currentTime) < 0.5) {
+              console.log('显示弹幕:', danmaku.text, '弹幕时间:', danmaku.time, '当前时间:', currentTime);
+              danmakuEngineRef.current.add(danmaku.text, danmaku.color || '#FFFFFF', danmaku.type || 'scroll');
+              shownDanmakusRef.current.add(danmaku._id);
+            }
+          } else {
             console.log('显示弹幕:', danmaku.text, '弹幕时间:', danmaku.time, '当前时间:', currentTime);
             danmakuEngineRef.current.add(danmaku.text, danmaku.color || '#FFFFFF', danmaku.type || 'scroll');
+            shownDanmakusRef.current.add(danmaku._id);
           }
-        } else {
-          console.log('显示弹幕:', danmaku.text, '弹幕时间:', danmaku.time, '当前时间:', currentTime);
-          danmakuEngineRef.current.add(danmaku.text, danmaku.color || '#FFFFFF', danmaku.type || 'scroll');
         }
       }
     });
@@ -112,6 +118,8 @@ const VideoDetail = () => {
     if (videoRef.current && danmakuEngineRef.current) {
       // 清除所有正在显示的弹幕
       danmakuEngineRef.current.clear();
+      // 清空已显示弹幕的记录
+      shownDanmakusRef.current.clear();
       // 更新时间追踪
       setLastTime(videoRef.current.currentTime);
     }
@@ -141,6 +149,8 @@ const VideoDetail = () => {
 
       if (danmakuEngineRef.current) {
         danmakuEngineRef.current.add(danmakuText, danmakuColor, 'scroll');
+        // 将新发送的弹幕ID添加到已显示列表，防止重复显示
+        shownDanmakusRef.current.add(response.data.danmaku._id);
       }
 
       setDanmakus([...danmakus, response.data.danmaku]);

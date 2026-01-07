@@ -5,6 +5,7 @@ import Home from './components/Home';
 import VideoDetail from './components/VideoDetail';
 import VideoUpload from './components/VideoUpload';
 import Auth from './components/Auth';
+import UserProfile from './components/UserProfile';
 import './App.css';
 
 function App() {
@@ -41,6 +42,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <VideoUpload />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <UserProfile />
                 </PrivateRoute>
               }
             />

@@ -16,7 +16,7 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-logo">
-          视频网站
+          气泡
         </Link>
 
         <div className="navbar-menu">

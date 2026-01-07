@@ -66,7 +66,6 @@ const Auth = ({ onLoginSuccess }) => {
                 value={formData.username}
                 onChange={handleChange}
                 required
-                minLength={3}
               />
             </div>
           )}
@@ -90,7 +89,7 @@ const Auth = ({ onLoginSuccess }) => {
               value={formData.password}
               onChange={handleChange}
               required
-              minLength={6}
+              minLength={4}
             />
           </div>
 

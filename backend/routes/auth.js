@@ -7,9 +7,9 @@ const auth = require('../middleware/auth');
 
 // 注册
 router.post('/register', [
-  body('username').trim().isLength({ min: 3 }).withMessage('用户名至少3个字符'),
+  body('username').trim().notEmpty().withMessage('用户名不能为空'),
   body('email').isEmail().withMessage('请输入有效的邮箱'),
-  body('password').isLength({ min: 6 }).withMessage('密码至少6个字符')
+  body('password').isLength({ min: 4 }).withMessage('密码至少4个字符')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -103,6 +103,98 @@ router.get('/me', auth, async (req, res) => {
         avatar: req.user.avatar
       }
     });
+  } catch (error) {
+    res.status(500).json({ error: '服务器错误' });
+  }
+});
+
+// 修改密码
+router.put('/change-password', [
+  auth,
+  body('currentPassword').notEmpty().withMessage('请输入当前密码'),
+  body('newPassword').isLength({ min: 4 }).withMessage('新密码至少4个字符')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { currentPassword, newPassword } = req.body;
+    const user = await User.findById(req.userId);
+
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(401).json({ error: '当前密码错误' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: '密码修改成功' });
+  } catch (error) {
+    res.status(500).json({ error: '服务器错误' });
+  }
+});
+
+// 修改邮箱
+router.put('/change-email', [
+  auth,
+  body('password').notEmpty().withMessage('请输入密码'),
+  body('newEmail').isEmail().withMessage('请输入有效的邮箱')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { password, newEmail } = req.body;
+    const user = await User.findById(req.userId);
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ error: '密码错误' });
+    }
+
+    const existingUser = await User.findOne({ email: newEmail });
+    if (existingUser) {
+      return res.status(400).json({ error: '该邮箱已被使用' });
+    }
+
+    user.email = newEmail;
+    await user.save();
+
+    res.json({ message: '邮箱修改成功', email: newEmail });
+  } catch (error) {
+    res.status(500).json({ error: '服务器错误' });
+  }
+});
+
+// 注销账号
+router.post('/deactivate', [
+  auth,
+  body('password').notEmpty().withMessage('请输入密码')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { password } = req.body;
+    const user = await User.findById(req.userId);
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ error: '密码错误' });
+    }
+
+    user.isDeactivated = true;
+    user.deactivatedAt = new Date();
+    await user.save();
+
+    res.json({ message: '账号已注销，数据将在30天后删除' });
   } catch (error) {
     res.status(500).json({ error: '服务器错误' });
   }

@@ -5,6 +5,9 @@
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Web site created using create-react-app" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&family=Nunito:wght@300;400;700&family=Varela+Round&display=swap" rel="stylesheet">
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.
@@ -15,6 +18,42 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>React App</title>
+    <script>
+      // 全局错误处理，忽略浏览器扩展引起的错误
+      (function() {
+        const originalConsoleError = console.error;
+        console.error = function(...args) {
+          const errorString = args.join(' ');
+          if (errorString.includes('EmptyRanges') ||
+              errorString.includes('played') ||
+              errorString.includes('syncControl')) {
+            return;
+          }
+          originalConsoleError.apply(console, args);
+        };
+
+        window.addEventListener('error', function(e) {
+          if (e.message && (e.message.includes('EmptyRanges') ||
+              e.message.includes('played') ||
+              e.message.includes('syncControl'))) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            return true;
+          }
+        }, true);
+
+        window.addEventListener('unhandledrejection', function(e) {
+          if (e.reason && e.reason.message &&
+              (e.reason.message.includes('EmptyRanges') ||
+               e.reason.message.includes('played') ||
+               e.reason.message.includes('syncControl'))) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            return true;
+          }
+        }, true);
+      })();
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

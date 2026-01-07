@@ -5,21 +5,60 @@ const auth = require('../middleware/auth');
 const upload = require('../middleware/upload');
 const fs = require('fs');
 const path = require('path');
+const { generateThumbnail, getVideoAspectRatio } = require('../utils/thumbnail');
 
 // 上传视频
-router.post('/upload', auth, upload.single('video'), async (req, res) => {
+router.post('/upload', auth, upload.fields([
+  { name: 'video', maxCount: 1 },
+  { name: 'thumbnail', maxCount: 1 }
+]), async (req, res) => {
   try {
-    if (!req.file) {
+    if (!req.files || !req.files.video) {
       return res.status(400).json({ error: '请选择视频文件' });
     }
 
+    const videoFile = req.files.video[0];
+    const thumbnailFile = req.files.thumbnail ? req.files.thumbnail[0] : null;
     const { title, description } = req.body;
 
+    let thumbnailPath = '';
+
+    // 如果用户上传了封面，使用用户上传的封面
+    if (thumbnailFile) {
+      // 存储相对路径，方便前端访问
+      thumbnailPath = thumbnailFile.path.replace(/\\/g, '/').replace(/^.*\/uploads\//, 'uploads/');
+    } else {
+      // 如果没有上传封面，自动生成视频第一帧作为封面
+      try {
+        const thumbnailDir = path.join(__dirname, '../uploads/thumbnails');
+        const thumbnailFilename = `${Date.now()}-${Math.round(Math.random() * 1E9)}.jpg`;
+        const fullPath = path.join(thumbnailDir, thumbnailFilename);
+
+        await generateThumbnail(videoFile.path, fullPath);
+        // 存储相对路径
+        thumbnailPath = `uploads/thumbnails/${thumbnailFilename}`;
+      } catch (err) {
+        console.error('生成封面失败:', err);
+        // 如果生成失败，继续保存视频，只是没有封面
+      }
+    }
+
+    // 获取视频宽高比
+    let aspectRatio = 1.78; // 默认16:9
+    try {
+      aspectRatio = await getVideoAspectRatio(videoFile.path);
+      console.log('视频宽高比:', aspectRatio);
+    } catch (err) {
+      console.error('获取视频宽高比失败:', err);
+    }
+
     const video = new Video({
-      title: title || req.file.originalname,
+      title: title || videoFile.originalname,
       description: description || '',
-      filename: req.file.filename,
-      filepath: req.file.path,
+      filename: videoFile.filename,
+      filepath: videoFile.path,
+      thumbnail: thumbnailPath,
+      aspectRatio: aspectRatio,
       uploader: req.userId
     });
 
@@ -31,10 +70,12 @@ router.post('/upload', auth, upload.single('video'), async (req, res) => {
         id: video._id,
         title: video.title,
         description: video.description,
+        thumbnail: video.thumbnail,
         createdAt: video.createdAt
       }
     });
   } catch (error) {
+    console.error('上传失败:', error);
     res.status(500).json({ error: '上传失败' });
   }
 });
