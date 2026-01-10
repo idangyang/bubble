@@ -3,6 +3,10 @@ const router = express.Router();
 const Danmaku = require('../models/Danmaku');
 const auth = require('../middleware/auth');
 const upload = require('../middleware/upload');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs').promises;
+const asrService = require('../utils/asrService');
 
 // 发送弹幕（支持语音弹幕）
 router.post('/', auth, upload.single('audio'), async (req, res) => {
@@ -73,6 +77,47 @@ router.delete('/:id', auth, async (req, res) => {
     res.json({ message: '弹幕已删除' });
   } catch (error) {
     res.status(500).json({ error: '删除弹幕失败' });
+  }
+});
+
+// 语音识别接口
+router.post('/transcribe', auth, upload.single('audio'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: '未上传音频文件' });
+    }
+
+    const audioPath = req.file.path;
+
+    try {
+      // 调用阿里云百炼进行语音识别
+      const transcribedText = await asrService.transcribe(audioPath);
+
+      // 清理临时文件
+      await fs.unlink(audioPath);
+
+      res.json({
+        text: transcribedText,
+        message: '语音识别成功'
+      });
+    } catch (asrError) {
+      console.error('语音识别失败:', asrError);
+
+      // 清理临时文件
+      try {
+        await fs.unlink(audioPath);
+      } catch (unlinkError) {
+        console.error('删除临时文件失败:', unlinkError);
+      }
+
+      res.status(500).json({
+        error: '语音识别失败',
+        details: asrError.message
+      });
+    }
+  } catch (error) {
+    console.error('处理请求失败:', error);
+    res.status(500).json({ error: '处理请求失败' });
   }
 });
 

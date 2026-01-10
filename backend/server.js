@@ -28,6 +28,7 @@ const authRoutes = require('./routes/auth');
 const videoRoutes = require('./routes/video');
 const danmakuRoutes = require('./routes/danmaku');
 const commentRoutes = require('./routes/comment');
+const seriesRoutes = require('./routes/series');
 
 // 路由
 app.get('/', (req, res) => {
@@ -38,6 +39,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/danmaku', danmakuRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/series', seriesRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

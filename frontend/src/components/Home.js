@@ -5,6 +5,8 @@ import './Home.css';
 
 const Home = () => {
   const [videos, setVideos] = useState([]);
+  const [series, setSeries] = useState([]);
+  const [viewMode, setViewMode] = useState('all'); // 'all', 'videos', 'series'
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
@@ -15,6 +17,7 @@ const Home = () => {
 
   useEffect(() => {
     fetchVideos();
+    fetchSeries();
     fetchCurrentUser();
     loadBackgroundImage();
   }, []);
@@ -45,8 +48,21 @@ const Home = () => {
     }
   };
 
+  const fetchSeries = async () => {
+    try {
+      const response = await api.get('/series');
+      setSeries(response.data.series);
+    } catch (err) {
+      console.error('获取系列列表失败:', err);
+    }
+  };
+
   const handleVideoClick = (videoId) => {
     navigate(`/video/${videoId}`);
+  };
+
+  const handleSeriesClick = (seriesId) => {
+    navigate(`/series/${seriesId}`);
   };
 
   // 加载背景图片
@@ -132,14 +148,119 @@ const Home = () => {
         )}
       </div>
 
+      {/* 视图切换按钮 */}
+      <div className="view-mode-buttons">
+        <button
+          className={viewMode === 'all' ? 'active' : ''}
+          onClick={() => setViewMode('all')}
+        >
+          全部
+        </button>
+        <button
+          className={viewMode === 'videos' ? 'active' : ''}
+          onClick={() => setViewMode('videos')}
+        >
+          单个视频
+        </button>
+        <button
+          className={viewMode === 'series' ? 'active' : ''}
+          onClick={() => setViewMode('series')}
+        >
+          剧集
+        </button>
+      </div>
+
       {/* 背景设置按钮 */}
       <button className="background-button" onClick={() => setShowBackgroundModal(true)}>
         🎨 设置背景
       </button>
-      {videos.length === 0 ? (
-        <div className="no-videos">暂无视频，快去上传吧！</div>
-      ) : (
-        <div className="video-grid">
+
+      {/* 剧集显示 */}
+      {(viewMode === 'all' || viewMode === 'series') && series.length > 0 && (
+        <div className="series-section">
+          <h2 className="section-title">剧集</h2>
+          <div className="video-grid">
+            {series.map((s) => {
+              // 剧集默认使用横屏布局（因为通常没有aspectRatio信息）
+              const isVertical = false;
+
+              if (isVertical) {
+                // 竖屏布局
+                return (
+                  <div
+                    key={s._id}
+                    className="video-card vertical"
+                    onClick={() => handleSeriesClick(s._id)}
+                  >
+                    <div className="video-thumbnail-wrapper">
+                      <div className="video-thumbnail">
+                        {s.thumbnail ? (
+                          <img src={`http://localhost:5001/${s.thumbnail}`} alt={s.title} />
+                        ) : (
+                          <div className="thumbnail-placeholder">
+                            <span>📺</span>
+                          </div>
+                        )}
+                        <div className="series-badge">剧集 {s.totalEpisodes}集</div>
+                      </div>
+                    </div>
+                    <div className="video-info">
+                      <h3 className="video-title">{s.title}</h3>
+                      <p className="video-description">{s.description || '暂无描述'}</p>
+                      <div className="video-meta">
+                        <span className="video-uploader">
+                          {s.uploader?.username || '未知用户'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              } else {
+                // 横屏布局
+                return (
+                  <div
+                    key={s._id}
+                    className="video-card horizontal"
+                    onClick={() => handleSeriesClick(s._id)}
+                  >
+                <div className="video-thumbnail-wrapper">
+                  <div className="video-thumbnail">
+                    {s.thumbnail ? (
+                      <img src={`http://localhost:5001/${s.thumbnail}`} alt={s.title} />
+                    ) : (
+                      <div className="thumbnail-placeholder">
+                        <span>📺</span>
+                      </div>
+                    )}
+                    <div className="series-badge">剧集 {s.totalEpisodes}集</div>
+                  </div>
+                </div>
+                <h3 className="video-title">{s.title}</h3>
+                <p className="video-description">{s.description || '暂无描述'}</p>
+                <div className="video-meta">
+                  <span className="video-uploader">
+                    {s.uploader?.username || '未知用户'}
+                  </span>
+                  <span className="video-views">{s.views} 次观看</span>
+                </div>
+              </div>
+            );
+          }
+        })}
+          </div>
+        </div>
+      )}
+
+      {/* 单个视频显示 */}
+      {(viewMode === 'all' || viewMode === 'videos') && (
+        <>
+          {viewMode === 'all' && videos.length > 0 && (
+            <h2 className="section-title">单个视频</h2>
+          )}
+          {videos.length === 0 ? (
+            <div className="no-videos">暂无视频，快去上传吧！</div>
+          ) : (
+            <div className="video-grid">
           {videos.map((video) => {
             const isVertical = video.aspectRatio < 1; // 竖屏视频：宽/高 < 1
 
@@ -206,6 +327,8 @@ const Home = () => {
             }
           })}
         </div>
+          )}
+        </>
       )}
 
       {/* 背景设置模态框 */}

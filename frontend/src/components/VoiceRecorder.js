@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './VoiceRecorder.css';
+import api from '../services/api';
 
 const VoiceRecorder = ({ onRecordComplete, maxDuration = 10 }) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -11,44 +12,9 @@ const VoiceRecorder = ({ onRecordComplete, maxDuration = 10 }) => {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const timerRef = useRef(null);
-  const recognitionRef = useRef(null);
 
   useEffect(() => {
-    // 初始化 Web Speech API
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.lang = 'zh-CN';
-      recognitionRef.current.continuous = true;
-      recognitionRef.current.interimResults = false;
-
-      recognitionRef.current.onresult = (event) => {
-        const transcript = Array.from(event.results)
-          .map(result => result[0].transcript)
-          .join('');
-        console.log('语音识别结果:', transcript);
-        setTranscribedText(transcript);
-      };
-
-      recognitionRef.current.onerror = (event) => {
-        console.error('语音识别错误:', event.error);
-        // 不显示弹窗，静默处理
-        setIsTranscribing(false);
-      };
-
-      recognitionRef.current.onend = () => {
-        console.log('语音识别结束');
-        setIsTranscribing(false);
-      };
-    } else {
-      console.warn('浏览器不支持 Web Speech API');
-      alert('您的浏览器不支持语音识别功能，请使用 Chrome 浏览器');
-    }
-
     return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
@@ -57,7 +23,13 @@ const VoiceRecorder = ({ onRecordComplete, maxDuration = 10 }) => {
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      });
 
       // 使用 MediaRecorder 录制音频
       const mediaRecorder = new MediaRecorder(stream, {
@@ -77,17 +49,15 @@ const VoiceRecorder = ({ onRecordComplete, maxDuration = 10 }) => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         setAudioBlob(audioBlob);
         stream.getTracks().forEach(track => track.stop());
+
+        // 录音结束后自动调用后端语音识别
+        transcribeAudio(audioBlob);
       };
 
       mediaRecorder.start();
       setIsRecording(true);
       setRecordingTime(0);
-
-      // 启动语音识别
-      if (recognitionRef.current) {
-        setIsTranscribing(true);
-        recognitionRef.current.start();
-      }
+      setTranscribedText('');
 
       // 启动计时器
       timerRef.current = setInterval(() => {
@@ -114,10 +84,33 @@ const VoiceRecorder = ({ onRecordComplete, maxDuration = 10 }) => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
+    }
+  };
 
-      if (recognitionRef.current && isTranscribing) {
-        recognitionRef.current.stop();
+  // 调用后端 API 进行语音识别
+  const transcribeAudio = async (audioBlob) => {
+    try {
+      setIsTranscribing(true);
+      console.log('开始语音识别...');
+
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.webm');
+
+      const response = await api.post('/danmaku/transcribe', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.data.text) {
+        setTranscribedText(response.data.text);
+        console.log('语音识别成功:', response.data.text);
       }
+    } catch (error) {
+      console.error('语音识别失败:', error);
+      // 识别失败不影响录音功能，用户可以选择直接发送
+    } finally {
+      setIsTranscribing(false);
     }
   };
 

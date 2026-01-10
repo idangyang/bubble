@@ -1,9 +1,10 @@
+/* Updated to purple theme - v2 */
 :root {
-  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --primary-gradient: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
   --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
   --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  --primary-color: #667eea;
-  --secondary-color: #764ba2;
+  --primary-color: #9b59b6;
+  --secondary-color: #8e44ad;
   --accent-color: #4facfe;
   --text-primary: #2d3748;
   --text-secondary: #718096;

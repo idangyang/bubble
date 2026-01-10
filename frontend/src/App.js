@@ -6,6 +6,8 @@ import VideoDetail from './components/VideoDetail';
 import VideoUpload from './components/VideoUpload';
 import Auth from './components/Auth';
 import UserProfile from './components/UserProfile';
+import SeriesUpload from './components/SeriesUpload';
+import SeriesDetail from './components/SeriesDetail';
 import './App.css';
 
 function App() {
@@ -50,6 +52,22 @@ function App() {
               element={
                 <PrivateRoute>
                   <UserProfile />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/series/upload"
+              element={
+                <PrivateRoute>
+                  <SeriesUpload />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/series/:seriesId"
+              element={
+                <PrivateRoute>
+                  <SeriesDetail />
                 </PrivateRoute>
               }
             />

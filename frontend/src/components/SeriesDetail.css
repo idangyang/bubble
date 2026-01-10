@@ -1,0 +1,141 @@
+.series-detail-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.series-header {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.series-header h1 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.series-description {
+  color: #666;
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.series-info {
+  display: flex;
+  gap: 20px;
+  color: #888;
+  font-size: 14px;
+}
+
+.series-content {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 30px;
+}
+
+.video-section {
+  background-color: #000;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.current-episode h2 {
+  background-color: #1a1a1a;
+  color: white;
+  padding: 15px;
+  margin: 0;
+  font-size: 18px;
+}
+
+.episode-video {
+  width: 100%;
+  display: block;
+  background-color: #000;
+}
+
+.episode-description {
+  background-color: #1a1a1a;
+  color: #ccc;
+  padding: 15px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.episodes-list {
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  padding: 20px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.episodes-list h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.episodes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.episode-item {
+  background-color: white;
+  padding: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+}
+
+.episode-item:hover {
+  background-color: #e3f2fd;
+  transform: translateY(-2px);
+}
+
+.episode-item.active {
+  background-color: #00a1d6;
+  color: white;
+  border-color: #0087b3;
+}
+
+.episode-number {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.episode-title {
+  font-size: 14px;
+  color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.episode-item.active .episode-title {
+  color: white;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+}
+
+.error {
+  color: #d32f2f;
+}
+
+@media (max-width: 1024px) {
+  .series-content {
+    grid-template-columns: 1fr;
+  }
+
+  .episodes-list {
+    max-height: 400px;
+  }
+}

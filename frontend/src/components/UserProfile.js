@@ -8,8 +8,11 @@ const UserProfile = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('profile'); // 'profile', 'videos', 'others'
+  const [videoTab, setVideoTab] = useState('single'); // 'single', 'series' - 视频管理的子标签
   const [myVideos, setMyVideos] = useState([]);
+  const [mySeries, setMySeries] = useState([]);
   const [selectedVideos, setSelectedVideos] = useState([]); // 选中的视频ID列表
+  const [selectedSeries, setSelectedSeries] = useState([]); // 选中的剧集ID列表
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   // 他人视频管理相关状态
@@ -47,12 +50,22 @@ const UserProfile = () => {
     } else {
       navigate('/auth');
     }
+  }, [navigate]);
 
-    // 如果在视频管理标签，加载用户的视频
+  // 单独的 useEffect 来处理视频和剧集的加载
+  useEffect(() => {
+    if (!user) return;
+
+    // 如果在视频管理标签，根据子标签加载对应内容
     if (activeTab === 'videos') {
-      fetchMyVideos();
+      if (videoTab === 'single') {
+        fetchMyVideos();
+      } else if (videoTab === 'series') {
+        fetchMySeries();
+      }
     }
-  }, [navigate, activeTab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, videoTab, user]);
 
   // 获取用户上传的视频
   const fetchMyVideos = async () => {
@@ -63,6 +76,55 @@ const UserProfile = () => {
     } catch (error) {
       console.error('获取视频列表失败:', error);
       alert('获取视频列表失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 获取用户上传的系列视频
+  const fetchMySeries = async () => {
+    try {
+      setLoading(true);
+      console.log('开始获取系列列表...');
+      const response = await api.get('/series');
+      console.log('获取到的所有系列:', response.data.series);
+
+      // 使用 user.id 或 user._id（兼容两种格式）
+      const currentUserId = user.id || user._id;
+      console.log('当前用户ID:', currentUserId);
+
+      // 过滤出当前用户的系列
+      const userSeries = response.data.series.filter(
+        s => s.uploader._id === currentUserId
+      );
+      console.log('过滤后的用户系列:', userSeries);
+
+      // 为每个系列获取剧集信息
+      const seriesWithEpisodes = await Promise.all(
+        userSeries.map(async (series) => {
+          try {
+            console.log(`获取系列 ${series._id} 的剧集...`);
+            const detailResponse = await api.get(`/series/${series._id}`);
+            console.log(`系列 ${series._id} 的剧集:`, detailResponse.data.episodes);
+            return {
+              ...series,
+              episodes: detailResponse.data.episodes || []
+            };
+          } catch (error) {
+            console.error(`获取系列 ${series._id} 的剧集失败:`, error);
+            return {
+              ...series,
+              episodes: []
+            };
+          }
+        })
+      );
+
+      console.log('最终的系列数据（包含剧集）:', seriesWithEpisodes);
+      setMySeries(seriesWithEpisodes);
+    } catch (error) {
+      console.error('获取系列列表失败:', error);
+      alert('获取系列列表失败');
     } finally {
       setLoading(false);
     }
@@ -120,6 +182,65 @@ const UserProfile = () => {
       alert('批量删除成功');
       setSelectedVideos([]);
       fetchMyVideos();
+    } catch (error) {
+      console.error('批量删除失败:', error);
+      alert('批量删除失败，请重试');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 删除系列视频
+  const handleDeleteSeries = async (seriesId) => {
+    if (!window.confirm('确定要删除这个系列吗？系列中的所有剧集也会被删除，删除后无法恢复。')) {
+      return;
+    }
+
+    try {
+      await api.delete(`/series/${seriesId}`);
+      alert('系列删除成功');
+      fetchMySeries();
+    } catch (error) {
+      console.error('删除系列失败:', error);
+      alert(error.response?.data?.error || '删除失败，请重试');
+    }
+  };
+
+  // 切换系列选中状态
+  const toggleSeriesSelection = (seriesId) => {
+    setSelectedSeries(prev =>
+      prev.includes(seriesId)
+        ? prev.filter(id => id !== seriesId)
+        : [...prev, seriesId]
+    );
+  };
+
+  // 全选/取消全选系列
+  const toggleSelectAllSeries = () => {
+    if (selectedSeries.length === mySeries.length) {
+      setSelectedSeries([]);
+    } else {
+      setSelectedSeries(mySeries.map(s => s._id));
+    }
+  };
+
+  // 批量删除系列
+  const handleBatchDeleteSeries = async () => {
+    if (selectedSeries.length === 0) {
+      alert('请先选择要删除的系列');
+      return;
+    }
+
+    if (!window.confirm(`确定要删除选中的 ${selectedSeries.length} 个系列吗？所有剧集也会被删除，删除后无法恢复。`)) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await Promise.all(selectedSeries.map(id => api.delete(`/series/${id}`)));
+      alert('批量删除成功');
+      setSelectedSeries([]);
+      fetchMySeries();
     } catch (error) {
       console.error('批量删除失败:', error);
       alert('批量删除失败，请重试');
@@ -423,11 +544,29 @@ const UserProfile = () => {
           <div className="profile-box">
             <h2 className="profile-title">视频管理</h2>
 
-            {loading ? (
-              <div className="loading">加载中...</div>
-            ) : myVideos.length === 0 ? (
-              <div className="no-videos">暂无上传的视频</div>
-            ) : (
+            {/* 子标签切换 */}
+            <div className="video-tabs">
+              <button
+                className={`video-tab-btn ${videoTab === 'single' ? 'active' : ''}`}
+                onClick={() => setVideoTab('single')}
+              >
+                单个视频
+              </button>
+              <button
+                className={`video-tab-btn ${videoTab === 'series' ? 'active' : ''}`}
+                onClick={() => setVideoTab('series')}
+              >
+                剧集管理
+              </button>
+            </div>
+
+            {videoTab === 'single' ? (
+              // 单个视频管理
+              loading ? (
+                <div className="loading">加载中...</div>
+              ) : myVideos.length === 0 ? (
+                <div className="no-videos">暂无上传的视频</div>
+              ) : (
               <>
                 {/* 批量操作工具栏 */}
                 <div className="batch-actions">
@@ -501,6 +640,111 @@ const UserProfile = () => {
                   </button>
                 )}
               </>
+              )
+            ) : (
+              // 剧集管理
+              loading ? (
+                <div className="loading">加载中...</div>
+              ) : mySeries.length === 0 ? (
+                <div className="no-videos">暂无上传的剧集</div>
+              ) : (
+              <>
+                {/* 批量操作工具栏 */}
+                <div className="batch-actions">
+                  <div className="batch-actions-left">
+                    <label className="select-all-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={selectedSeries.length === mySeries.length}
+                        onChange={toggleSelectAllSeries}
+                      />
+                      <span>全选 ({selectedSeries.length}/{mySeries.length})</span>
+                    </label>
+                  </div>
+                  {selectedSeries.length > 0 && (
+                    <button
+                      className="btn-danger"
+                      onClick={handleBatchDeleteSeries}
+                    >
+                      批量删除 ({selectedSeries.length})
+                    </button>
+                  )}
+                </div>
+
+                {/* 系列列表 */}
+                <div className="series-list">
+                  {mySeries.map((series) => (
+                    <div key={series._id} className="series-item">
+                      <div className="series-header">
+                        <label className="video-checkbox">
+                          <input
+                            type="checkbox"
+                            checked={selectedSeries.includes(series._id)}
+                            onChange={() => toggleSeriesSelection(series._id)}
+                          />
+                        </label>
+                        <div
+                          className="series-thumbnail"
+                          onClick={() => navigate(`/series/${series._id}`)}
+                        >
+                          {series.thumbnail ? (
+                            <img src={`http://localhost:5001/${series.thumbnail}`} alt={series.title} />
+                          ) : (
+                            <div className="thumbnail-placeholder">📺</div>
+                          )}
+                          <div className="series-badge-manage">系列 {series.totalEpisodes}集</div>
+                        </div>
+                        <div className="series-info">
+                          <h3 className="series-title">{series.title}</h3>
+                          <p className="series-description">{series.description || '暂无描述'}</p>
+                          <div className="series-meta">
+                            <span>观看: {series.views}</span>
+                            <span>创建: {new Date(series.createdAt).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                        <button
+                          className="btn-delete"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteSeries(series._id);
+                          }}
+                        >
+                          删除剧集
+                        </button>
+                      </div>
+
+                      {/* 剧集列表 */}
+                      {series.episodes && series.episodes.length > 0 && (
+                        <div className="episodes-list">
+                          <h4 className="episodes-title">剧集列表 ({series.episodes.length}集)</h4>
+                          <div className="episodes-grid">
+                            {series.episodes.map((episode) => (
+                              <div key={episode._id} className="episode-card">
+                                <div className="episode-thumbnail">
+                                  {episode.thumbnail ? (
+                                    <img src={`http://localhost:5001/${episode.thumbnail}`} alt={episode.title} />
+                                  ) : (
+                                    <div className="thumbnail-placeholder">📹</div>
+                                  )}
+                                  <div className="episode-number">第{episode.episodeNumber}集</div>
+                                </div>
+                                <div className="episode-info">
+                                  <h5 className="episode-title">{episode.title}</h5>
+                                  <p className="episode-description">{episode.description || '暂无描述'}</p>
+                                  <div className="episode-meta">
+                                    <span>👁 {episode.views || 0} 次观看</span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+              )
             )}
           </div>
         ) : activeTab === 'others' ? (

@@ -83,6 +83,23 @@ const VideoUpload = ({ onUploadSuccess }) => {
   return (
     <div className="video-upload-container">
       <h2>上传视频</h2>
+
+      <div className="upload-type-selector">
+        <button
+          type="button"
+          className="type-button active"
+        >
+          上传单个视频
+        </button>
+        <button
+          type="button"
+          className="type-button"
+          onClick={() => navigate('/series/upload')}
+        >
+          上传剧集
+        </button>
+      </div>
+
       <form onSubmit={handleSubmit} className="upload-form">
         <div className="form-group">
           <label>选择视频文件</label>
