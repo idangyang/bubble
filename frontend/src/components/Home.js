@@ -38,11 +38,12 @@ const Home = () => {
     try {
       setLoading(true);
       const response = await api.get('/videos');
-      setVideos(response.data.videos);
+      setVideos(response.data.videos || []);
       setError('');
     } catch (err) {
       console.error('获取视频列表失败:', err);
       setError('加载视频失败，请稍后重试');
+      setVideos([]);
     } finally {
       setLoading(false);
     }
@@ -51,9 +52,10 @@ const Home = () => {
   const fetchSeries = async () => {
     try {
       const response = await api.get('/series');
-      setSeries(response.data.series);
+      setSeries(response.data.series || []);
     } catch (err) {
       console.error('获取系列列表失败:', err);
+      setSeries([]);
     }
   };
 
@@ -263,7 +265,7 @@ const Home = () => {
           ) : (
             <div className="video-grid">
           {videos.map((video) => {
-            const isVertical = video.aspectRatio < 1; // 竖屏视频：宽/高 < 1
+            const isVertical = video.aspectRatio && video.aspectRatio < 1; // 竖屏视频：宽/高 < 1
 
             if (isVertical) {
               // 竖屏视频布局：封面在左，右侧从上到下是标题、简介、发布人
