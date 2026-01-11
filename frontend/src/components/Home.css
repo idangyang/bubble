@@ -15,19 +15,30 @@
 .home-title {
   font-size: 32px;
   margin: 0;
-  color: var(--text-primary);
+  padding: 0;
+  color: rgba(155, 89, 182, 0.8);
   font-weight: 800;
-  background: var(--primary-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-family: 'Source Han Sans CN', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  text-shadow:
+    2px 2px 4px rgba(0, 0, 0, 0.2),
+    -2px -2px 0 rgba(255, 255, 255, 0.4),
+    2px -2px 0 rgba(255, 255, 255, 0.4),
+    -2px 2px 0 rgba(255, 255, 255, 0.4),
+    2px 2px 0 rgba(255, 255, 255, 0.4),
+    -3px -3px 0 rgba(255, 255, 255, 0.2),
+    3px -3px 0 rgba(255, 255, 255, 0.2),
+    -3px 3px 0 rgba(255, 255, 255, 0.2),
+    3px 3px 0 rgba(255, 255, 255, 0.2);
+  text-align: center;
 }
 
 .user-display {
   padding: 12px 24px;
-  background: var(--primary-gradient);
+  background: rgba(155, 89, 182, 0.5);
+  backdrop-filter: blur(10px);
   color: white;
   border-radius: var(--radius-sm);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   font-family: 'Source Han Sans CN', 'Noto Sans SC', sans-serif;
   font-weight: 300;
   font-size: 16px;
@@ -50,22 +61,28 @@
 
 .view-mode-buttons button {
   padding: 10px 20px;
-  background-color: #f0f0f0;
-  border: 2px solid transparent;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 6px;
   cursor: pointer;
   font-size: 16px;
   transition: all 0.3s;
+  color: var(--text-primary);
 }
 
 .view-mode-buttons button:hover {
-  background-color: #e0e0e0;
+  background: rgba(155, 89, 182, 0.3) !important;
+  border-color: rgba(155, 89, 182, 0.5) !important;
+  box-shadow: 0 2px 8px rgba(155, 89, 182, 0.3) !important;
 }
 
 .view-mode-buttons button.active {
-  background-color: #00a1d6;
+  background: rgba(155, 89, 182, 0.5);
+  backdrop-filter: blur(10px);
   color: white;
-  border-color: #0087b3;
+  border-color: rgba(155, 89, 182, 0.8);
+  box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4);
 }
 
 .series-section {
@@ -74,22 +91,37 @@
 
 .section-title {
   font-size: 24px;
-  color: #333;
+  color: white;
   margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #00a1d6;
+  padding: 12px 24px;
+  background: rgba(155, 89, 182, 0.5);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(155, 89, 182, 0.3);
+  font-weight: 700;
 }
 
 .series-badge {
   position: absolute;
   top: 10px;
-  right: 10px;
-  background-color: rgba(0, 161, 214, 0.9);
+  left: 10px;
+  background: rgba(155, 89, 182, 0.7);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   color: white;
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
   font-weight: bold;
+  box-shadow: 0 2px 8px rgba(155, 89, 182, 0.3);
+  z-index: 10;
+}
+
+/* 横屏视频的剧集徽章在右上角 */
+.video-card.horizontal .series-badge {
+  left: auto;
+  right: 10px;
 }
 
 .loading, .error, .no-videos {
@@ -146,6 +178,7 @@
   padding: 8px 0 8px 8px;
   height: 100%;
   align-self: stretch;
+  position: relative;
 }
 
 .video-card.vertical .video-thumbnail {
@@ -321,15 +354,16 @@
   bottom: 40px;
   left: 40px;
   padding: 16px 32px;
-  background: var(--primary-gradient);
+  background: rgba(155, 89, 182, 0.5);
+  backdrop-filter: blur(10px);
   color: white;
-  border: none;
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 50px;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 24px rgba(155, 89, 182, 0.4);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -338,7 +372,9 @@
 
 .background-button:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.5);
+  background: rgba(155, 89, 182, 0.7) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 12px 32px rgba(155, 89, 182, 0.5) !important;
 }
 
 .background-button:active {

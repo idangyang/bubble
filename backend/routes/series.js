@@ -124,6 +124,11 @@ router.post('/:seriesId/upload-episode', auth, upload.fields([
       series.thumbnail = thumbnailPath;
     }
 
+    // 如果系列还没有aspectRatio，使用第一集的aspectRatio
+    if (!series.aspectRatio || series.aspectRatio === 1.78) {
+      series.aspectRatio = aspectRatio;
+    }
+
     await series.save();
 
     res.status(201).json({

@@ -1,7 +1,13 @@
 .video-detail-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 30px 20px;
+}
+
+.video-content {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 30px;
 }
 
 .loading, .error {
@@ -16,18 +22,18 @@
 }
 
 .video-section {
-  background: var(--bg-secondary);
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
   border-radius: var(--radius-lg);
   padding: 30px;
-  margin-bottom: 30px;
   box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .video-player-wrapper {
   position: relative;
   width: 100%;
-  background: #000;
+  background: transparent;
   border-radius: var(--radius-md);
   overflow: hidden;
   box-shadow: var(--shadow-lg);
@@ -151,16 +157,19 @@
 }
 
 .comments-section {
-  background: var(--bg-secondary);
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
   border-radius: var(--radius-lg);
-  padding: 30px;
+  padding: 20px;
   box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  max-height: 600px;
+  overflow-y: auto;
 }
 
 .comments-section h3 {
   font-size: 20px;
-  margin: 0 0 25px 0;
+  margin: 0 0 15px 0;
   color: var(--text-primary);
   font-weight: 800;
 }
@@ -197,22 +206,25 @@
 }
 
 .comments-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
 }
 
 .comment-item {
-  padding: 20px;
-  background: var(--bg-primary);
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
   border-radius: var(--radius-md);
-  border: 2px solid var(--border-color);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   transition: var(--transition);
 }
 
 .comment-item:hover {
-  border-color: var(--primary-color);
-  box-shadow: var(--shadow-sm);
+  background: rgba(155, 89, 182, 0.3) !important;
+  border-color: rgba(155, 89, 182, 0.5) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(155, 89, 182, 0.3) !important;
 }
 
 .comment-header {
@@ -273,9 +285,10 @@
 
 .mode-btn {
   padding: 8px 16px;
-  background: var(--bg-primary);
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
   color: var(--text-secondary);
-  border: 2px solid var(--border-color);
+  border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 13px;

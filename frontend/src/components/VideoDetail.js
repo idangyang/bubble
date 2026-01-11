@@ -254,95 +254,93 @@ const VideoDetail = () => {
 
   return (
     <div className="video-detail-container">
-      <div className="video-section">
-        <div className="video-player-wrapper">
-          <video
-            ref={videoRef}
-            className="video-player"
-            src={videoUrl}
-            controls
-            autoPlay
-            onTimeUpdate={handleTimeUpdate}
-            onPlay={handlePlay}
-            onPause={handlePause}
-            onSeeking={handleSeeking}
-            onLoadedMetadata={handleLoadedMetadata}
-          />
-          <canvas ref={canvasRef} className="danmaku-canvas" />
-        </div>
-
-        <div className="video-info-section">
-          <h1 className="video-title">{video.title}</h1>
-          <p className="video-description">{video.description || '暂无描述'}</p>
-          <div className="video-meta">
-            <span>上传者: {video.uploader?.username || '未知用户'}</span>
-            <span>观看次数: {video.views}</span>
+      <div className="video-content">
+        <div className="video-section">
+          <div className="video-player-wrapper">
+            <video
+              ref={videoRef}
+              className="video-player"
+              src={videoUrl}
+              controls
+              autoPlay
+              onTimeUpdate={handleTimeUpdate}
+              onPlay={handlePlay}
+              onPause={handlePause}
+              onSeeking={handleSeeking}
+              onLoadedMetadata={handleLoadedMetadata}
+            />
+            <canvas ref={canvasRef} className="danmaku-canvas" />
           </div>
-        </div>
 
-        <div className="danmaku-input-section">
-          <div className="danmaku-header">
-            <h3>发送弹幕</h3>
-            <div className="danmaku-mode-toggle">
-              <button
-                type="button"
-                className={!isVoiceMode ? 'mode-btn active' : 'mode-btn'}
-                onClick={() => setIsVoiceMode(false)}
-              >
-                文字弹幕
-              </button>
-              <button
-                type="button"
-                className={isVoiceMode ? 'mode-btn active' : 'mode-btn'}
-                onClick={() => setIsVoiceMode(true)}
-              >
-                语音弹幕
-              </button>
+          <div className="video-info-section">
+            <h1 className="video-title">{video.title}</h1>
+            <p className="video-description">{video.description || '暂无描述'}</p>
+            <div className="video-meta">
+              <span>上传者: {video.uploader?.username || '未知用户'}</span>
+              <span>观看次数: {video.views}</span>
             </div>
           </div>
 
-          {!isVoiceMode ? (
-            <form onSubmit={handleSendDanmaku} className="danmaku-form">
-              <input
-                type="text"
-                value={danmakuText}
-                onChange={(e) => setDanmakuText(e.target.value)}
-                placeholder="输入弹幕内容..."
-                maxLength={100}
-                className="danmaku-input"
-              />
-              <input
-                type="color"
-                value={danmakuColor}
-                onChange={(e) => setDanmakuColor(e.target.value)}
-                className="color-picker"
-              />
-              <button type="submit" className="send-button">发送</button>
-            </form>
-          ) : (
-            <VoiceRecorder onRecordComplete={handleVoiceRecordComplete} maxDuration={10} />
-          )}
+          <div className="danmaku-input-section">
+            <div className="danmaku-header">
+              <h3>发送弹幕</h3>
+              <div className="danmaku-mode-toggle">
+                <button
+                  type="button"
+                  className={!isVoiceMode ? 'mode-btn active' : 'mode-btn'}
+                  onClick={() => setIsVoiceMode(false)}
+                >
+                  文字弹幕
+                </button>
+                <button
+                  type="button"
+                  className={isVoiceMode ? 'mode-btn active' : 'mode-btn'}
+                  onClick={() => setIsVoiceMode(true)}
+                >
+                  语音弹幕
+                </button>
+              </div>
+            </div>
+
+            {!isVoiceMode ? (
+              <form onSubmit={handleSendDanmaku} className="danmaku-form">
+                <input
+                  type="text"
+                  value={danmakuText}
+                  onChange={(e) => setDanmakuText(e.target.value)}
+                  placeholder="输入弹幕内容..."
+                  maxLength={100}
+                  className="danmaku-input"
+                />
+                <input
+                  type="color"
+                  value={danmakuColor}
+                  onChange={(e) => setDanmakuColor(e.target.value)}
+                  className="color-picker"
+                />
+                <button type="submit" className="send-button">发送</button>
+              </form>
+            ) : (
+              <VoiceRecorder onRecordComplete={handleVoiceRecordComplete} maxDuration={10} />
+            )}
+          </div>
         </div>
-      </div>
 
-      <div className="comments-section">
-        <h3>评论区 ({comments.length})</h3>
-        <form onSubmit={handleSendComment} className="comment-form">
-          <textarea
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            placeholder="发表你的评论..."
-            maxLength={500}
-            className="comment-textarea"
-          />
-          <button type="submit" className="send-button">发表评论</button>
-        </form>
+        <div className="comments-section">
+          <h3>评论区 ({comments.length})</h3>
+          <form onSubmit={handleSendComment} className="comment-form">
+            <textarea
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="发表你的评论..."
+              maxLength={500}
+              className="comment-textarea"
+            />
+            <button type="submit" className="send-button">发表评论</button>
+          </form>
 
-        <div className="comments-list">
-          {comments.length === 0 ? (
-            <p className="no-comments">暂无评论，快来发表第一条评论吧！</p>
-          ) : (
-            comments.map((comment) => (
+          <div className="comments-list">
+            {comments.map((comment) => (
               <div key={comment._id} className="comment-item">
                 <div className="comment-header">
                   <span className="comment-author">{comment.user?.username || '未知用户'}</span>
@@ -360,8 +358,8 @@ const VideoDetail = () => {
                   </button>
                 )}
               </div>
-            ))
-          )}
+            ))}
+          </div>
         </div>
       </div>
     </div>

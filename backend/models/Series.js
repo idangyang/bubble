@@ -14,6 +14,10 @@ const seriesSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  aspectRatio: {
+    type: Number,
+    default: 1.78
+  },
   uploader: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

@@ -37,10 +37,10 @@
 }
 
 .type-button:hover {
-  background: rgba(155, 89, 182, 0.3);
-  border-color: rgba(155, 89, 182, 0.5);
+  background: rgba(155, 89, 182, 0.3) !important;
+  border-color: rgba(155, 89, 182, 0.5) !important;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(155, 89, 182, 0.3);
+  box-shadow: 0 4px 12px rgba(155, 89, 182, 0.3) !important;
 }
 
 .type-button.active {

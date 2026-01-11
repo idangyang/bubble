@@ -181,8 +181,8 @@ const Home = () => {
           <h2 className="section-title">剧集</h2>
           <div className="video-grid">
             {series.map((s) => {
-              // 剧集默认使用横屏布局（因为通常没有aspectRatio信息）
-              const isVertical = false;
+              // 剧集根据aspectRatio判断是否为竖屏，如果没有aspectRatio则默认为横屏
+              const isVertical = s.aspectRatio && s.aspectRatio < 1;
 
               if (isVertical) {
                 // 竖屏布局
@@ -216,36 +216,37 @@ const Home = () => {
                   </div>
                 );
               } else {
-                // 横屏布局
+                // 横屏布局：简介在上，封面在中，标题和发布人在下
                 return (
                   <div
                     key={s._id}
                     className="video-card horizontal"
                     onClick={() => handleSeriesClick(s._id)}
                   >
-                <div className="video-thumbnail-wrapper">
-                  <div className="video-thumbnail">
-                    {s.thumbnail ? (
-                      <img src={`http://localhost:5001/${s.thumbnail}`} alt={s.title} />
-                    ) : (
-                      <div className="thumbnail-placeholder">
-                        <span>📺</span>
+                    <div className="video-info">
+                      <p className="video-description">{s.description || '暂无描述'}</p>
+                    </div>
+                    <div className="video-thumbnail-wrapper">
+                      <div className="video-thumbnail">
+                        {s.thumbnail ? (
+                          <img src={`http://localhost:5001/${s.thumbnail}`} alt={s.title} />
+                        ) : (
+                          <div className="thumbnail-placeholder">
+                            <span>📺</span>
+                          </div>
+                        )}
+                        <div className="series-badge">剧集 {s.totalEpisodes}集</div>
                       </div>
-                    )}
-                    <div className="series-badge">剧集 {s.totalEpisodes}集</div>
+                    </div>
+                    <h3 className="video-title">{s.title}</h3>
+                    <div className="video-meta">
+                      <span className="video-uploader">
+                        {s.uploader?.username || '未知用户'}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <h3 className="video-title">{s.title}</h3>
-                <p className="video-description">{s.description || '暂无描述'}</p>
-                <div className="video-meta">
-                  <span className="video-uploader">
-                    {s.uploader?.username || '未知用户'}
-                  </span>
-                  <span className="video-views">{s.views} 次观看</span>
-                </div>
-              </div>
-            );
-          }
+                );
+              }
         })}
           </div>
         </div>

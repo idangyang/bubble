@@ -7,13 +7,14 @@
 }
 
 .auth-box {
-  background: var(--bg-secondary);
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
   padding: 50px;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   width: 100%;
   max-width: 450px;
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .auth-box h2 {
@@ -43,11 +44,12 @@
 .auth-box .form-group input {
   width: 100%;
   padding: 14px 16px;
-  border: 2px solid var(--border-color);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: var(--radius-sm);
   font-size: 15px;
   transition: var(--transition);
-  background: var(--bg-primary);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
 }
 
 .auth-box .form-group input:focus {
