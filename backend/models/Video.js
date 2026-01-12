@@ -30,6 +30,17 @@ const videoSchema = new mongoose.Schema({
     type: Number,
     default: 1.78
   },
+  // 转码状态: 'original' (原始文件), 'transcoding' (转码中), 'completed' (转码完成)
+  transcodeStatus: {
+    type: String,
+    enum: ['original', 'transcoding', 'completed'],
+    default: 'original'
+  },
+  // 原始文件路径（如果转码了，保存原始文件路径）
+  originalFilepath: {
+    type: String,
+    default: ''
+  },
   uploader: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

@@ -255,7 +255,7 @@ function SeriesUpload() {
             <label>选择多个视频文件 *</label>
             <input
               type="file"
-              accept="video/*"
+              accept=".mp4,.avi,.mov,.mkv,.webm,.flv,.wmv,.m4v,.mpg,.mpeg,.3gp,.ts,.vob,.ogv,.m2ts,.mts,video/*"
               multiple
               onChange={handleBatchVideoSelect}
               disabled={uploading}

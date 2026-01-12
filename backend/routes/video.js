@@ -7,6 +7,37 @@ const upload = require('../middleware/upload');
 const fs = require('fs');
 const path = require('path');
 const { generateThumbnail, getVideoAspectRatio } = require('../utils/thumbnail');
+const { needsConversion, convertToMP4 } = require('../utils/videoConverter');
+
+// 异步转码函数
+async function startAsyncTranscode(videoId, originalPath) {
+  try {
+    console.log(`开始异步转码视频 ID: ${videoId}`);
+    const outputFilename = `${Date.now()}-${Math.round(Math.random() * 1E9)}.mp4`;
+    const outputPath = path.join(path.dirname(originalPath), outputFilename);
+
+    await convertToMP4(originalPath, outputPath);
+
+    // 更新数据库记录
+    const video = await Video.findById(videoId);
+    if (video) {
+      video.filepath = outputPath;
+      video.filename = outputFilename;
+      video.transcodeStatus = 'completed';
+      await video.save();
+      console.log(`视频转码完成 ID: ${videoId}`);
+
+      // 删除原始文件
+      if (fs.existsSync(originalPath)) {
+        fs.unlinkSync(originalPath);
+        console.log(`已删除原始文件: ${originalPath}`);
+      }
+    }
+  } catch (err) {
+    console.error(`视频转码失败 ID: ${videoId}`, err);
+    // 转码失败，保持原始文件和状态
+  }
+}
 
 // 上传视频
 router.post('/upload', auth, upload.fields([
@@ -22,6 +53,16 @@ router.post('/upload', auth, upload.fields([
     const thumbnailFile = req.files.thumbnail ? req.files.thumbnail[0] : null;
     const { title, description } = req.body;
 
+    let finalVideoPath = videoFile.path;
+    let finalFilename = videoFile.filename;
+    let transcodeStatus = 'original';
+
+    // 检查是否需要转码（异步模式）
+    if (needsConversion(videoFile.path)) {
+      console.log(`检测到非浏览器支持格式，将在后台异步转码: ${videoFile.originalname}`);
+      transcodeStatus = 'transcoding';
+    }
+
     let thumbnailPath = '';
 
     // 如果用户上传了封面，使用用户上传的封面
@@ -35,7 +76,7 @@ router.post('/upload', auth, upload.fields([
         const thumbnailFilename = `${Date.now()}-${Math.round(Math.random() * 1E9)}.jpg`;
         const fullPath = path.join(thumbnailDir, thumbnailFilename);
 
-        await generateThumbnail(videoFile.path, fullPath);
+        await generateThumbnail(finalVideoPath, fullPath);
         // 存储相对路径
         thumbnailPath = `uploads/thumbnails/${thumbnailFilename}`;
       } catch (err) {
@@ -47,7 +88,7 @@ router.post('/upload', auth, upload.fields([
     // 获取视频宽高比
     let aspectRatio = 1.78; // 默认16:9
     try {
-      aspectRatio = await getVideoAspectRatio(videoFile.path);
+      aspectRatio = await getVideoAspectRatio(finalVideoPath);
       console.log('视频宽高比:', aspectRatio);
     } catch (err) {
       console.error('获取视频宽高比失败:', err);
@@ -56,14 +97,21 @@ router.post('/upload', auth, upload.fields([
     const video = new Video({
       title: title || videoFile.originalname,
       description: description || '',
-      filename: videoFile.filename,
-      filepath: videoFile.path,
+      filename: finalFilename,
+      filepath: finalVideoPath,
       thumbnail: thumbnailPath,
       aspectRatio: aspectRatio,
+      transcodeStatus: transcodeStatus,
+      originalFilepath: finalVideoPath,
       uploader: req.userId
     });
 
     await video.save();
+
+    // 如果需要转码，在后台异步执行
+    if (transcodeStatus === 'transcoding') {
+      startAsyncTranscode(video._id, finalVideoPath);
+    }
 
     res.status(201).json({
       message: '视频上传成功',
@@ -151,6 +199,29 @@ router.get('/stream/:id', async (req, res) => {
       return res.status(404).json({ error: '视频文件不存在' });
     }
 
+    // 根据文件扩展名获取正确的 MIME 类型
+    const ext = path.extname(videoPath).toLowerCase();
+    const mimeTypes = {
+      '.mp4': 'video/mp4',
+      '.webm': 'video/webm',
+      '.ogg': 'video/ogg',
+      '.ogv': 'video/ogg',
+      '.avi': 'video/x-msvideo',
+      '.mov': 'video/quicktime',
+      '.mkv': 'video/x-matroska',
+      '.flv': 'video/x-flv',
+      '.wmv': 'video/x-ms-wmv',
+      '.m4v': 'video/x-m4v',
+      '.mpg': 'video/mpeg',
+      '.mpeg': 'video/mpeg',
+      '.3gp': 'video/3gpp',
+      '.ts': 'video/mp2t',
+      '.vob': 'video/mpeg',
+      '.m2ts': 'video/mp2t',
+      '.mts': 'video/mp2t'
+    };
+    const contentType = mimeTypes[ext] || 'video/mp4';
+
     const stat = fs.statSync(videoPath);
     const fileSize = stat.size;
     const range = req.headers.range;
@@ -165,14 +236,14 @@ router.get('/stream/:id', async (req, res) => {
         'Content-Range': `bytes ${start}-${end}/${fileSize}`,
         'Accept-Ranges': 'bytes',
         'Content-Length': chunksize,
-        'Content-Type': 'video/mp4',
+        'Content-Type': contentType,
       };
       res.writeHead(206, head);
       file.pipe(res);
     } else {
       const head = {
         'Content-Length': fileSize,
-        'Content-Type': 'video/mp4',
+        'Content-Type': contentType,
       };
       res.writeHead(200, head);
       fs.createReadStream(videoPath).pipe(res);

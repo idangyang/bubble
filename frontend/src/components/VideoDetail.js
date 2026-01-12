@@ -257,6 +257,11 @@ const VideoDetail = () => {
     <div className="video-detail-container">
       <div className="video-content">
         <div className="video-section">
+          {video.transcodeStatus === 'transcoding' && (
+            <div className="transcode-notice">
+              ⚠️ 视频正在后台转码中，当前播放原始文件。转码完成后画质和兼容性会更好，请稍后刷新页面。
+            </div>
+          )}
           <div className="video-player-wrapper">
             <video
               ref={videoRef}

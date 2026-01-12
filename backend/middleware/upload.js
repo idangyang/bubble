@@ -38,12 +38,12 @@ const storage = multer.diskStorage({
 
 const fileFilter = (req, file, cb) => {
   if (file.fieldname === 'video') {
-    // 视频文件验证
-    const allowedTypes = /mp4|avi|mov|mkv|webm/;
+    // 视频文件验证 - 支持更多视频格式
+    const allowedTypes = /mp4|avi|mov|mkv|webm|flv|wmv|m4v|mpg|mpeg|3gp|ts|vob|ogv|m2ts|mts/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
+    const mimetype = /video\//.test(file.mimetype);
 
-    if (extname && mimetype) {
+    if (extname || mimetype) {
       cb(null, true);
     } else {
       cb(new Error('只支持视频文件格式'));
@@ -79,7 +79,7 @@ const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 100 * 1024 * 1024, // 视频最大100MB
+    fileSize: 10 * 1024 * 1024 * 1024, // 视频最大10GB
     files: 2 // 最多2个文件（视频+封面）
   }
 });

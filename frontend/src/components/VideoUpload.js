@@ -105,7 +105,7 @@ const VideoUpload = ({ onUploadSuccess }) => {
           <label>选择视频文件</label>
           <input
             type="file"
-            accept="video/*"
+            accept=".mp4,.avi,.mov,.mkv,.webm,.flv,.wmv,.m4v,.mpg,.mpeg,.3gp,.ts,.vob,.ogv,.m2ts,.mts,video/*"
             onChange={handleFileChange}
             disabled={uploading}
             className="file-input"
