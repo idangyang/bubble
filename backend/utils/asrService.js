@@ -138,7 +138,7 @@ class ASRService {
    */
   async transcribe(audioPath) {
     try {
-      console.log('开始语音识别，音频文件:', audioPath);
+      // console.log('开始语音识别，音频文件:', audioPath);
 
       // 读取音频文件并转换为 Base64
       const audioBuffer = await fs.readFile(audioPath);
@@ -218,15 +218,15 @@ class ASRService {
       ];
 
       if (invalidResults.includes(transcribedText) || transcribedText.length === 0) {
-        console.log('识别结果无效，返回空字符串');
+        // console.log('识别结果无效，返回空字符串');
         return '';
       }
 
-      console.log('语音识别成功:', transcribedText);
+      // console.log('语音识别成功:', transcribedText);
 
       // 将中文数字转换为阿拉伯数字
       const convertedText = this.convertChineseNumbersToDigits(transcribedText);
-      console.log('数字转换后:', convertedText);
+      // console.log('数字转换后:', convertedText);
 
       return convertedText;
     } catch (error) {

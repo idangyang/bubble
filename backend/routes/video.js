@@ -14,7 +14,7 @@ const { sortSearchResults } = require('../utils/sortHelper');
 // 异步转码函数
 async function startAsyncTranscode(videoId, originalPath) {
   try {
-    console.log(`开始异步转码视频 ID: ${videoId}`);
+    // console.log(`开始异步转码视频 ID: ${videoId}`);
     const outputFilename = `${Date.now()}-${Math.round(Math.random() * 1E9)}.mp4`;
     const outputPath = path.join(path.dirname(originalPath), outputFilename);
 
@@ -27,12 +27,12 @@ async function startAsyncTranscode(videoId, originalPath) {
       video.filename = outputFilename;
       video.transcodeStatus = 'completed';
       await video.save();
-      console.log(`视频转码完成 ID: ${videoId}`);
+      // console.log(`视频转码完成 ID: ${videoId}`);
 
       // 删除原始文件
       if (fs.existsSync(originalPath)) {
         fs.unlinkSync(originalPath);
-        console.log(`已删除原始文件: ${originalPath}`);
+        // console.log(`已删除原始文件: ${originalPath}`);
       }
     }
   } catch (err) {
@@ -61,7 +61,7 @@ router.post('/upload', auth, upload.fields([
 
     // 检查是否需要转码（异步模式）
     if (needsConversion(videoFile.path)) {
-      console.log(`检测到非浏览器支持格式，将在后台异步转码: ${videoFile.originalname}`);
+      // console.log(`检测到非浏览器支持格式，将在后台异步转码: ${videoFile.originalname}`);
       transcodeStatus = 'transcoding';
     }
 
@@ -91,7 +91,7 @@ router.post('/upload', auth, upload.fields([
     let aspectRatio = 1.78; // 默认16:9
     try {
       aspectRatio = await getVideoAspectRatio(finalVideoPath);
-      console.log('视频宽高比:', aspectRatio);
+      // console.log('视频宽高比:', aspectRatio);
     } catch (err) {
       console.error('获取视频宽高比失败:', err);
     }
@@ -100,7 +100,7 @@ router.post('/upload', auth, upload.fields([
     let duration = 0;
     try {
       duration = await getVideoDuration(finalVideoPath);
-      console.log('视频时长:', duration, '秒');
+      // console.log('视频时长:', duration, '秒');
     } catch (err) {
       console.error('获取视频时长失败:', err);
     }

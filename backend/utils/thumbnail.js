@@ -75,11 +75,11 @@ const generateThumbnail = async (videoPath, outputPath) => {
   try {
     // 获取视频时长
     const duration = await getVideoDuration(videoPath);
-    console.log(`视频时长: ${duration}秒`);
+    // console.log(`视频时长: ${duration}秒`);
 
     // 获取视频实际尺寸
     const dimensions = await getVideoDimensions(videoPath);
-    console.log(`视频尺寸: ${dimensions.width}x${dimensions.height}`);
+    // console.log(`视频尺寸: ${dimensions.width}x${dimensions.height}`);
 
     // 计算封面尺寸，保持原始宽高比
     const maxSize = 640; // 最大边长
@@ -96,20 +96,20 @@ const generateThumbnail = async (videoPath, outputPath) => {
     }
 
     const thumbnailSize = `${thumbnailWidth}x${thumbnailHeight}`;
-    console.log(`封面尺寸: ${thumbnailSize}`);
+    // console.log(`封面尺寸: ${thumbnailSize}`);
 
     // 生成随机时间点（避开开头和结尾各10%）
     const startOffset = duration * 0.1;
     const endOffset = duration * 0.9;
     const randomTime = startOffset + Math.random() * (endOffset - startOffset);
-    console.log(`随机时间点: ${randomTime}秒`);
+    // console.log(`随机时间点: ${randomTime}秒`);
 
     // 格式化时间为 HH:MM:SS
     const hours = Math.floor(randomTime / 3600);
     const minutes = Math.floor((randomTime % 3600) / 60);
     const seconds = Math.floor(randomTime % 60);
     const timestamp = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    console.log(`截取时间戳: ${timestamp}`);
+    // console.log(`截取时间戳: ${timestamp}`);
 
     return new Promise((resolve, reject) => {
       ffmpeg(videoPath)
@@ -120,7 +120,7 @@ const generateThumbnail = async (videoPath, outputPath) => {
           size: thumbnailSize
         })
         .on('end', () => {
-          console.log('封面生成成功:', outputPath);
+          // console.log('封面生成成功:', outputPath);
           resolve(outputPath);
         })
         .on('error', (err) => {

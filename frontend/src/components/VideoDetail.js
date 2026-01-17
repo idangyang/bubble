@@ -39,7 +39,7 @@ const VideoDetail = () => {
       // 确保 Canvas 尺寸正确
       danmakuEngineRef.current.init();
       danmakuEngineRef.current.start();
-      console.log('DanmakuEngine 初始化完成, Canvas尺寸:', canvasRef.current.width, 'x', canvasRef.current.height);
+      // console.log('DanmakuEngine 初始化完成, Canvas尺寸:', canvasRef.current.width, 'x', canvasRef.current.height);
     }
 
     return () => {
@@ -62,7 +62,7 @@ const VideoDetail = () => {
       setDanmakus(danmakuRes.data.danmakus);
       setComments(commentRes.data.comments);
       setError('');
-      console.log('加载的弹幕数据:', danmakuRes.data.danmakus);
+      // console.log('加载的弹幕数据:', danmakuRes.data.danmakus);
     } catch (err) {
       console.error('获取视频数据失败:', err);
       setError('加载视频失败，请稍后重试');
@@ -89,8 +89,8 @@ const VideoDetail = () => {
           // 如果是时间跳跃，只显示当前时间点附近的弹幕
           if (timeJump) {
             if (Math.abs(danmaku.time - currentTime) < 0.5) {
-              console.log('显示弹幕:', danmaku.text, '弹幕时间:', danmaku.time, '当前时间:', currentTime);
-              console.log('弹幕数据:', { isVoice: danmaku.isVoice, audioUrl: danmaku.audioUrl });
+              // console.log('显示弹幕:', danmaku.text, '弹幕时间:', danmaku.time, '当前时间:', currentTime);
+              // console.log('弹幕数据:', { isVoice: danmaku.isVoice, audioUrl: danmaku.audioUrl });
               danmakuEngineRef.current.add(
                 danmaku.text,
                 danmaku.color || '#FFFFFF',
@@ -101,8 +101,8 @@ const VideoDetail = () => {
               shownDanmakusRef.current.add(danmaku._id);
             }
           } else {
-            console.log('显示弹幕:', danmaku.text, '弹幕时间:', danmaku.time, '当前时间:', currentTime);
-            console.log('弹幕数据:', { isVoice: danmaku.isVoice, audioUrl: danmaku.audioUrl });
+            // console.log('显示弹幕:', danmaku.text, '弹幕时间:', danmaku.time, '当前时间:', currentTime);
+            // console.log('弹幕数据:', { isVoice: danmaku.isVoice, audioUrl: danmaku.audioUrl });
             danmakuEngineRef.current.add(
               danmaku.text,
               danmaku.color || '#FFFFFF',
@@ -146,7 +146,7 @@ const VideoDetail = () => {
     // 视频元数据加载完成后，重新初始化 Canvas
     if (canvasRef.current && danmakuEngineRef.current) {
       danmakuEngineRef.current.init();
-      console.log('视频加载完成，Canvas重新初始化:', canvasRef.current.width, 'x', canvasRef.current.height);
+      // console.log('视频加载完成，Canvas重新初始化:', canvasRef.current.width, 'x', canvasRef.current.height);
     }
   };
 

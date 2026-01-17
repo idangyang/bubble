@@ -108,7 +108,7 @@ const VoiceRecorder = ({ onRecordComplete, maxDuration = 10 }) => {
   const transcribeAudio = async (audioBlob) => {
     try {
       setIsTranscribing(true);
-      console.log('开始语音识别...');
+      // console.log('开始语音识别...');
 
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.webm');
@@ -121,7 +121,7 @@ const VoiceRecorder = ({ onRecordComplete, maxDuration = 10 }) => {
 
       if (response.data.text) {
         setTranscribedText(response.data.text);
-        console.log('语音识别成功:', response.data.text);
+        // console.log('语音识别成功:', response.data.text);
       }
     } catch (error) {
       console.error('语音识别失败:', error);

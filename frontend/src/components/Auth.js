@@ -33,15 +33,15 @@ const Auth = ({ onLoginSuccess }) => {
 
       const response = await api.post(endpoint, data);
 
-      console.log('Auth - 登录响应数据:', response.data);
-      console.log('Auth - 用户信息:', response.data.user);
-      console.log('Auth - isSuperAdmin:', response.data.user.isSuperAdmin);
+      // console.log('Auth - 登录响应数据:', response.data);
+      // console.log('Auth - 用户信息:', response.data.user);
+      // console.log('Auth - isSuperAdmin:', response.data.user.isSuperAdmin);
 
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
       localStorage.setItem('userId', response.data.user._id);
 
-      console.log('Auth - 已保存到localStorage的用户信息:', JSON.parse(localStorage.getItem('user')));
+      // console.log('Auth - 已保存到localStorage的用户信息:', JSON.parse(localStorage.getItem('user')));
 
       alert(isLogin ? '登录成功！' : '注册成功！');
 

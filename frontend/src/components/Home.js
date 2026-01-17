@@ -301,11 +301,6 @@ const Home = () => {
     <div className="home-container">
       <div className="home-header">
         <h1 className="home-title">视频列表</h1>
-        {currentUser && (
-          <div className="user-display" onClick={() => navigate('/profile')}>
-            {currentUser.username}
-          </div>
-        )}
       </div>
 
       {/* 搜索框 */}

@@ -101,22 +101,6 @@ router.post('/login', [
   }
 });
 
-// 获取当前用户信息
-router.get('/me', auth, async (req, res) => {
-  try {
-    res.json({
-      user: {
-        id: req.user._id,
-        username: req.user.username,
-        email: req.user.email,
-        avatar: req.user.avatar
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: '服务器错误' });
-  }
-});
-
 // 修改密码
 router.put('/change-password', [
   auth,
@@ -217,6 +201,130 @@ router.get('/me', auth, async (req, res) => {
       return res.status(404).json({ error: '用户不存在' });
     }
     res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: '服务器错误' });
+  }
+});
+
+// 管理员查看指定用户信息（只读）
+router.get('/user/:userId', auth, async (req, res) => {
+  try {
+    const currentUser = await User.findById(req.userId);
+    const targetUserId = req.params.userId;
+
+    // 只有管理员或用户本人可以查看
+    if (!currentUser.isSuperAdmin && req.userId.toString() !== targetUserId) {
+      return res.status(403).json({ error: '无权查看此用户信息' });
+    }
+
+    const user = await User.findById(targetUserId).select('-password');
+    if (!user) {
+      return res.status(404).json({ error: '用户不存在' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: '服务器错误' });
+  }
+});
+
+// 管理员修改用户密码
+router.put('/admin/change-password/:userId', [
+  auth,
+  body('newPassword').isLength({ min: 4 }).withMessage('新密码至少4个字符')
+], async (req, res) => {
+  try {
+    const currentUser = await User.findById(req.userId);
+
+    // 只有管理员可以修改其他用户密码
+    if (!currentUser.isSuperAdmin) {
+      return res.status(403).json({ error: '无权执行此操作' });
+    }
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { newPassword } = req.body;
+    const targetUserId = req.params.userId;
+
+    const user = await User.findById(targetUserId);
+    if (!user) {
+      return res.status(404).json({ error: '用户不存在' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: '密码修改成功' });
+  } catch (error) {
+    res.status(500).json({ error: '服务器错误' });
+  }
+});
+
+// 管理员修改用户邮箱
+router.put('/admin/change-email/:userId', [
+  auth,
+  body('newEmail').isEmail().withMessage('请输入有效的邮箱')
+], async (req, res) => {
+  try {
+    const currentUser = await User.findById(req.userId);
+
+    // 只有管理员可以修改其他用户邮箱
+    if (!currentUser.isSuperAdmin) {
+      return res.status(403).json({ error: '无权执行此操作' });
+    }
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { newEmail } = req.body;
+    const targetUserId = req.params.userId;
+
+    const user = await User.findById(targetUserId);
+    if (!user) {
+      return res.status(404).json({ error: '用户不存在' });
+    }
+
+    const existingUser = await User.findOne({ email: newEmail });
+    if (existingUser && existingUser._id.toString() !== targetUserId) {
+      return res.status(400).json({ error: '该邮箱已被使用' });
+    }
+
+    user.email = newEmail;
+    await user.save();
+
+    res.json({ message: '邮箱修改成功', email: newEmail });
+  } catch (error) {
+    res.status(500).json({ error: '服务器错误' });
+  }
+});
+
+// 管理员注销用户账号
+router.post('/admin/deactivate/:userId', auth, async (req, res) => {
+  try {
+    const currentUser = await User.findById(req.userId);
+
+    // 只有管理员可以注销其他用户账号
+    if (!currentUser.isSuperAdmin) {
+      return res.status(403).json({ error: '无权执行此操作' });
+    }
+
+    const targetUserId = req.params.userId;
+
+    const user = await User.findById(targetUserId);
+    if (!user) {
+      return res.status(404).json({ error: '用户不存在' });
+    }
+
+    user.isDeactivated = true;
+    user.deactivatedAt = new Date();
+    await user.save();
+
+    res.json({ message: '账号已注销，数据将在30天后删除' });
   } catch (error) {
     res.status(500).json({ error: '服务器错误' });
   }

@@ -20,7 +20,9 @@ app.use('/uploads', express.static('uploads'));
 
 // 数据库连接
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/video-danmaku')
-  .then(() => console.log('MongoDB 连接成功'))
+  .then(() => {
+    // console.log('MongoDB 连接成功')
+  })
   .catch(err => console.error('MongoDB 连接失败:', err));
 
 // 导入路由
@@ -43,5 +45,5 @@ app.use('/api/series', seriesRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`服务器运行在端口 ${PORT}`);
+  // console.log(`服务器运行在端口 ${PORT}`);
 });

@@ -8,7 +8,7 @@ const UserProfile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('profile'); // 'profile', 'videos', 'others'
+  const [activeTab, setActiveTab] = useState('profile'); // 'profile', 'videos', 'others', 'management'
   const [videoTab, setVideoTab] = useState('single'); // 'single', 'series' - 视频管理的子标签
   const [myVideos, setMyVideos] = useState([]);
   const [mySeries, setMySeries] = useState([]);
@@ -21,6 +21,18 @@ const UserProfile = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [otherUserVideos, setOtherUserVideos] = useState([]);
+
+  // 用户管理相关状态
+  const [managedUser, setManagedUser] = useState(null);
+  const [userSearchUsername, setUserSearchUsername] = useState('');
+  const [userSearchResults, setUserSearchResults] = useState([]);
+  const [adminPasswordForm, setAdminPasswordForm] = useState({
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [adminEmailForm, setAdminEmailForm] = useState({
+    newEmail: ''
+  });
 
   // 修改密码表单
   const [passwordForm, setPasswordForm] = useState({
@@ -42,12 +54,12 @@ const UserProfile = () => {
     const userStr = localStorage.getItem('user');
     if (userStr) {
       const userData = JSON.parse(userStr);
-      console.log('UserProfile - 从localStorage读取的用户数据:', userData);
-      console.log('UserProfile - isSuperAdmin值:', userData.isSuperAdmin);
+      // console.log('UserProfile - 从localStorage读取的用户数据:', userData);
+      // console.log('UserProfile - isSuperAdmin值:', userData.isSuperAdmin);
       setUser(userData);
       // 直接从 localStorage 读取超级管理员状态
       setIsSuperAdmin(userData.isSuperAdmin || false);
-      console.log('UserProfile - 设置isSuperAdmin为:', userData.isSuperAdmin || false);
+      // console.log('UserProfile - 设置isSuperAdmin为:', userData.isSuperAdmin || false);
     } else {
       navigate('/auth');
     }
@@ -86,27 +98,27 @@ const UserProfile = () => {
   const fetchMySeries = async () => {
     try {
       setLoading(true);
-      console.log('开始获取系列列表...');
+      // console.log('开始获取系列列表...');
       const response = await api.get('/series');
-      console.log('获取到的所有系列:', response.data.series);
+      // console.log('获取到的所有系列:', response.data.series);
 
       // 使用 user.id 或 user._id（兼容两种格式）
       const currentUserId = user.id || user._id;
-      console.log('当前用户ID:', currentUserId);
+      // console.log('当前用户ID:', currentUserId);
 
       // 过滤出当前用户的系列
       const userSeries = response.data.series.filter(
         s => s.uploader._id === currentUserId
       );
-      console.log('过滤后的用户系列:', userSeries);
+      // console.log('过滤后的用户系列:', userSeries);
 
       // 为每个系列获取剧集信息
       const seriesWithEpisodes = await Promise.all(
         userSeries.map(async (series) => {
           try {
-            console.log(`获取系列 ${series._id} 的剧集...`);
+            // console.log(`获取系列 ${series._id} 的剧集...`);
             const detailResponse = await api.get(`/series/${series._id}`);
-            console.log(`系列 ${series._id} 的剧集:`, detailResponse.data.episodes);
+            // console.log(`系列 ${series._id} 的剧集:`, detailResponse.data.episodes);
             return {
               ...series,
               episodes: detailResponse.data.episodes || []
@@ -121,7 +133,7 @@ const UserProfile = () => {
         })
       );
 
-      console.log('最终的系列数据（包含剧集）:', seriesWithEpisodes);
+      // console.log('最终的系列数据（包含剧集）:', seriesWithEpisodes);
       setMySeries(seriesWithEpisodes);
     } catch (error) {
       console.error('获取系列列表失败:', error);
@@ -395,6 +407,117 @@ const UserProfile = () => {
     }
   };
 
+  // 搜索用户（用户管理）
+  const handleSearchUsersForManagement = async () => {
+    if (!userSearchUsername.trim()) {
+      alert('请输入用户名');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await api.get(`/videos/admin/search-users?username=${userSearchUsername}`);
+      setUserSearchResults(response.data.users);
+    } catch (error) {
+      console.error('搜索用户失败:', error);
+      alert('搜索用户失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 选择要管理的用户
+  const handleSelectManagedUser = (user) => {
+    setManagedUser(user);
+    setUserSearchResults([]);
+    setUserSearchUsername('');
+    setAdminPasswordForm({ newPassword: '', confirmPassword: '' });
+    setAdminEmailForm({ newEmail: '' });
+  };
+
+  // 管理员修改用户密码
+  const handleAdminChangePassword = async (e) => {
+    e.preventDefault();
+
+    if (adminPasswordForm.newPassword !== adminPasswordForm.confirmPassword) {
+      alert('两次输入的新密码不一致');
+      return;
+    }
+
+    if (!managedUser) {
+      alert('请先选择要管理的用户');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await api.put(`/auth/admin/change-password/${managedUser._id}`, {
+        newPassword: adminPasswordForm.newPassword
+      });
+
+      alert('密码修改成功');
+      setAdminPasswordForm({ newPassword: '', confirmPassword: '' });
+    } catch (error) {
+      console.error('修改密码错误:', error);
+      const errorMsg = error.response?.data?.error || error.response?.data?.errors?.[0]?.msg || '修改失败，请重试';
+      alert(errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 管理员修改用户邮箱
+  const handleAdminChangeEmail = async (e) => {
+    e.preventDefault();
+
+    if (!managedUser) {
+      alert('请先选择要管理的用户');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await api.put(`/auth/admin/change-email/${managedUser._id}`, {
+        newEmail: adminEmailForm.newEmail
+      });
+
+      alert('邮箱修改成功');
+      // 更新被管理用户的邮箱显示
+      setManagedUser({ ...managedUser, email: response.data.email });
+      setAdminEmailForm({ newEmail: '' });
+    } catch (error) {
+      const errorMsg = error.response?.data?.error || '修改失败，请重试';
+      alert(errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 管理员注销用户账号
+  const handleAdminDeactivateUser = async () => {
+    if (!managedUser) {
+      alert('请先选择要管理的用户');
+      return;
+    }
+
+    if (!window.confirm(`确定要注销用户 ${managedUser.username} 的账号吗？该用户的数据将在30天后永久删除。`)) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await api.post(`/auth/admin/deactivate/${managedUser._id}`);
+
+      alert('用户账号已注销');
+      setManagedUser(null);
+    } catch (error) {
+      const errorMsg = error.response?.data?.error || '注销失败，请重试';
+      alert(errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!user) {
     return <div className="profile-container"><div className="loading">加载中...</div></div>;
   }
@@ -421,6 +544,14 @@ const UserProfile = () => {
             onClick={() => setActiveTab('others')}
           >
             他人视频
+          </button>
+        )}
+        {isSuperAdmin && (
+          <button
+            className={`sidebar-btn ${activeTab === 'management' ? 'active' : ''}`}
+            onClick={() => setActiveTab('management')}
+          >
+            用户管理
           </button>
         )}
       </div>
@@ -844,6 +975,138 @@ const UserProfile = () => {
                 ))}
               </div>
             ) : null}
+          </div>
+        ) : activeTab === 'management' ? (
+          // 用户管理内容
+          <div className="profile-box">
+            <h2 className="profile-title">用户管理</h2>
+
+            {/* 搜索用户 */}
+            <div className="search-user-section">
+              <div className="search-input-group">
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="输入用户名搜索..."
+                  value={userSearchUsername}
+                  onChange={(e) => setUserSearchUsername(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearchUsersForManagement()}
+                />
+                <button className="btn-search" onClick={handleSearchUsersForManagement}>
+                  搜索
+                </button>
+              </div>
+
+              {/* 搜索结果 */}
+              {userSearchResults.length > 0 && (
+                <div className="search-results">
+                  {userSearchResults.map((user) => (
+                    <div
+                      key={user._id}
+                      className="search-result-item"
+                      onClick={() => handleSelectManagedUser(user)}
+                    >
+                      <span className="result-username">{user.username}</span>
+                      <span className="result-email">{user.email}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* 选中用户信息和管理功能 */}
+            {managedUser && (
+              <>
+                <div className="selected-user-info">
+                  <h3>当前管理用户：{managedUser.username}</h3>
+                  <button
+                    className="btn-clear-selection"
+                    onClick={() => {
+                      setManagedUser(null);
+                      setAdminPasswordForm({ newPassword: '', confirmPassword: '' });
+                      setAdminEmailForm({ newEmail: '' });
+                    }}
+                  >
+                    清除选择
+                  </button>
+                </div>
+
+                {/* 用户信息显示 */}
+                <div className="profile-section">
+                  <h3>用户信息</h3>
+                  <div className="info-item">
+                    <label>用户名：</label>
+                    <span>{managedUser.username}</span>
+                  </div>
+                  <div className="info-item">
+                    <label>邮箱：</label>
+                    <span>{managedUser.email}</span>
+                  </div>
+                </div>
+
+                {/* 修改用户密码 */}
+                <div className="profile-section">
+                  <h3>修改用户密码</h3>
+                  <form onSubmit={handleAdminChangePassword}>
+                    <div className="form-group">
+                      <label>新密码</label>
+                      <input
+                        type="password"
+                        value={adminPasswordForm.newPassword}
+                        onChange={(e) => setAdminPasswordForm({...adminPasswordForm, newPassword: e.target.value})}
+                        required
+                        minLength={4}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>确认新密码</label>
+                      <input
+                        type="password"
+                        value={adminPasswordForm.confirmPassword}
+                        onChange={(e) => setAdminPasswordForm({...adminPasswordForm, confirmPassword: e.target.value})}
+                        required
+                        minLength={4}
+                      />
+                    </div>
+                    <button type="submit" disabled={loading} className="btn-primary">
+                      {loading ? '处理中...' : '修改密码'}
+                    </button>
+                  </form>
+                </div>
+
+                {/* 修改用户邮箱 */}
+                <div className="profile-section">
+                  <h3>修改用户邮箱</h3>
+                  <form onSubmit={handleAdminChangeEmail}>
+                    <div className="form-group">
+                      <label>新邮箱</label>
+                      <input
+                        type="email"
+                        value={adminEmailForm.newEmail}
+                        onChange={(e) => setAdminEmailForm({...adminEmailForm, newEmail: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <button type="submit" disabled={loading} className="btn-primary">
+                      {loading ? '处理中...' : '修改邮箱'}
+                    </button>
+                  </form>
+                </div>
+
+                {/* 注销用户账号 */}
+                <div className="profile-section danger-section">
+                  <h3>注销用户账号</h3>
+                  <p className="warning-text">注销后，该用户的数据将在30天后永久删除</p>
+                  <button
+                    onClick={handleAdminDeactivateUser}
+                    disabled={loading}
+                    className="btn-danger"
+                  >
+                    {loading ? '处理中...' : '注销该用户账号'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         ) : null}
       </div>

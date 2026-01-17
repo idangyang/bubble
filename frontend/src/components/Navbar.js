@@ -6,11 +6,6 @@ const Navbar = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
-    navigate('/login');
-  };
 
   return (
     <nav className="navbar">
@@ -25,9 +20,9 @@ const Navbar = () => {
               <Link to="/upload" className="navbar-upload-btn">
                 上传视频
               </Link>
-              <button onClick={handleLogout} className="navbar-logout-btn">
-                退出登录
-              </button>
+              <Link to="/profile" className="navbar-profile-btn">
+                个人中心
+              </Link>
             </>
           ) : (
             <Link to="/login" className="navbar-login-btn">

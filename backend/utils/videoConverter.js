@@ -22,7 +22,7 @@ function needsConversion(filePath) {
  */
 function convertToMP4(inputPath, outputPath) {
   return new Promise((resolve, reject) => {
-    console.log(`开始转码: ${inputPath} -> ${outputPath}`);
+    // console.log(`开始转码: ${inputPath} -> ${outputPath}`);
 
     ffmpeg(inputPath)
       .output(outputPath)
@@ -35,15 +35,15 @@ function convertToMP4(inputPath, outputPath) {
         '-movflags +faststart'
       ])
       .on('start', (commandLine) => {
-        console.log('FFmpeg 命令:', commandLine);
+        // console.log('FFmpeg 命令:', commandLine);
       })
       .on('progress', (progress) => {
         if (progress.percent) {
-          console.log(`转码进度: ${Math.round(progress.percent)}%`);
+          // console.log(`转码进度: ${Math.round(progress.percent)}%`);
         }
       })
       .on('end', () => {
-        console.log('转码完成:', outputPath);
+        // console.log('转码完成:', outputPath);
         resolve(outputPath);
       })
       .on('error', (err) => {
