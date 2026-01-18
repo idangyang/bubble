@@ -80,6 +80,68 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
+// 点赞弹幕
+router.post('/:id/like', auth, async (req, res) => {
+  try {
+    const danmaku = await Danmaku.findById(req.params.id);
+
+    if (!danmaku) {
+      return res.status(404).json({ error: '弹幕不存在' });
+    }
+
+    // 检查用户是否已经点赞
+    const alreadyLiked = danmaku.likedBy.includes(req.userId);
+
+    if (alreadyLiked) {
+      return res.status(400).json({ error: '已经点赞过此弹幕' });
+    }
+
+    // 添加点赞
+    danmaku.likes += 1;
+    danmaku.likedBy.push(req.userId);
+    await danmaku.save();
+
+    res.json({
+      message: '点赞成功',
+      likes: danmaku.likes
+    });
+  } catch (error) {
+    console.error('点赞失败:', error);
+    res.status(500).json({ error: '点赞失败' });
+  }
+});
+
+// 取消点赞弹幕
+router.delete('/:id/like', auth, async (req, res) => {
+  try {
+    const danmaku = await Danmaku.findById(req.params.id);
+
+    if (!danmaku) {
+      return res.status(404).json({ error: '弹幕不存在' });
+    }
+
+    // 检查用户是否已经点赞
+    const likeIndex = danmaku.likedBy.indexOf(req.userId);
+
+    if (likeIndex === -1) {
+      return res.status(400).json({ error: '尚未点赞此弹幕' });
+    }
+
+    // 取消点赞
+    danmaku.likes -= 1;
+    danmaku.likedBy.splice(likeIndex, 1);
+    await danmaku.save();
+
+    res.json({
+      message: '取消点赞成功',
+      likes: danmaku.likes
+    });
+  } catch (error) {
+    console.error('取消点赞失败:', error);
+    res.status(500).json({ error: '取消点赞失败' });
+  }
+});
+
 // 语音识别接口
 router.post('/transcribe', auth, upload.single('audio'), async (req, res) => {
   try {

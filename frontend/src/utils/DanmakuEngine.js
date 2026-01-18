@@ -57,9 +57,12 @@ class DanmakuEngine {
     return 0;
   }
 
-  add(text, color = '#FFFFFF', type = 'scroll', isVoice = false, audioUrl = null) {
+  add(text, color = '#FFFFFF', type = 'scroll', isVoice = false, audioUrl = null, likes = 0) {
+    // 根据点赞数计算字号：每10个赞增加1个字号
+    const calculatedFontSize = this.fontSize + Math.floor(likes / 10);
+
     // 测量文本宽度（语音弹幕需要额外空间显示播放按钮）
-    this.ctx.font = `${this.fontSize}px Arial`;
+    this.ctx.font = `${calculatedFontSize}px Arial`;
     const textWidth = this.ctx.measureText(text).width;
     const totalWidth = isVoice ? textWidth + 40 : textWidth;
 
@@ -71,9 +74,9 @@ class DanmakuEngine {
       color,
       type,
       x: this.canvas.width,
-      y: trackIndex * this.trackHeight + this.trackHeight / 2 + this.fontSize / 2,
+      y: trackIndex * this.trackHeight + this.trackHeight / 2 + calculatedFontSize / 2,
       speed: this.speed,
-      fontSize: this.fontSize,
+      fontSize: calculatedFontSize,
       opacity: 1,
       textWidth: totalWidth,
       trackIndex,
@@ -81,7 +84,8 @@ class DanmakuEngine {
       audioUrl,
       audio: null,
       button: null,
-      isPlaying: false
+      isPlaying: false,
+      likes
     };
 
     // 如果是语音弹幕，创建音频和按钮

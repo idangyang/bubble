@@ -292,6 +292,37 @@ const VideoDetail = () => {
     }
   };
 
+  const handleLikeDanmaku = async (danmakuId) => {
+    try {
+      const response = await api.post(`/danmaku/${danmakuId}/like`);
+      // 更新本地弹幕数据
+      setDanmakus(danmakus.map(d =>
+        d._id === danmakuId
+          ? { ...d, likes: response.data.likes, likedBy: [...(d.likedBy || []), localStorage.getItem('userId')] }
+          : d
+      ));
+    } catch (err) {
+      console.error('点赞失败:', err);
+      alert(err.response?.data?.error || '点赞失败');
+    }
+  };
+
+  const handleUnlikeDanmaku = async (danmakuId) => {
+    try {
+      const response = await api.delete(`/danmaku/${danmakuId}/like`);
+      // 更新本地弹幕数据
+      const userId = localStorage.getItem('userId');
+      setDanmakus(danmakus.map(d =>
+        d._id === danmakuId
+          ? { ...d, likes: response.data.likes, likedBy: (d.likedBy || []).filter(id => id !== userId) }
+          : d
+      ));
+    } catch (err) {
+      console.error('取消点赞失败:', err);
+      alert(err.response?.data?.error || '取消点赞失败');
+    }
+  };
+
   // 播放控制函数
   const togglePlay = () => {
     if (!videoRef.current) return;
@@ -604,6 +635,47 @@ const VideoDetail = () => {
                 )}
               </div>
             ))}
+          </div>
+        </div>
+
+        <div className="danmaku-list-section">
+          <h3>弹幕列表 ({danmakus.length})</h3>
+          <div className="danmaku-list">
+            {danmakus
+              .sort((a, b) => (b.likes || 0) - (a.likes || 0))
+              .map((danmaku) => {
+                const userId = localStorage.getItem('userId');
+                const isLiked = danmaku.likedBy?.includes(userId);
+                const fontSize = 14 + Math.floor((danmaku.likes || 0) / 10);
+
+                return (
+                  <div key={danmaku._id} className="danmaku-item">
+                    <div className="danmaku-content">
+                      <span
+                        className="danmaku-text"
+                        style={{
+                          color: danmaku.color || '#FFFFFF',
+                          fontSize: `${fontSize}px`,
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {danmaku.text}
+                      </span>
+                      <span className="danmaku-time">
+                        {Math.floor(danmaku.time / 60)}:{String(Math.floor(danmaku.time % 60)).padStart(2, '0')}
+                      </span>
+                    </div>
+                    <div className="danmaku-actions">
+                      <button
+                        onClick={() => isLiked ? handleUnlikeDanmaku(danmaku._id) : handleLikeDanmaku(danmaku._id)}
+                        className={`like-button ${isLiked ? 'liked' : ''}`}
+                      >
+                        {isLiked ? '❤️' : '🤍'} {danmaku.likes || 0}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
           </div>
         </div>
       </div>
