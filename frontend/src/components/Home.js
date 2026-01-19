@@ -312,10 +312,6 @@ const Home = () => {
 
   return (
     <div className="home-container">
-      <div className="home-header">
-        <h1 className="home-title">视频列表</h1>
-      </div>
-
       {/* 搜索框 */}
       <div className="search-container">
         <div className="search-input-wrapper">

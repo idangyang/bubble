@@ -49,6 +49,7 @@ const UserProfile = () => {
 
   // 注销账号表单
   const [deactivatePassword, setDeactivatePassword] = useState('');
+  const [showDeactivateDialog, setShowDeactivateDialog] = useState(false);
 
   useEffect(() => {
     const userStr = localStorage.getItem('user');
@@ -324,13 +325,21 @@ const UserProfile = () => {
     }
   };
 
+  // 打开注销账号对话框
+  const openDeactivateDialog = () => {
+    setShowDeactivateDialog(true);
+    setDeactivatePassword('');
+  };
+
+  // 关闭注销账号对话框
+  const closeDeactivateDialog = () => {
+    setShowDeactivateDialog(false);
+    setDeactivatePassword('');
+  };
+
   // 注销账号
   const handleDeactivate = async (e) => {
     e.preventDefault();
-
-    if (!window.confirm('注销账号后，您的数据将在30天后永久删除。确定要注销吗？')) {
-      return;
-    }
 
     setLoading(true);
     try {
@@ -643,32 +652,20 @@ const UserProfile = () => {
               </form>
             </div>
 
+            {/* 注销账号 */}
+            <div className="profile-section">
+              <h3>注销账号</h3>
+              <button onClick={openDeactivateDialog} className="btn-secondary">
+                注销账号
+              </button>
+            </div>
+
             {/* 退出登录 */}
             <div className="profile-section">
               <h3>退出登录</h3>
               <button onClick={handleLogout} className="btn-secondary">
                 退出登录
               </button>
-            </div>
-
-            {/* 注销账号 */}
-            <div className="profile-section danger-section">
-              <h3>注销账号</h3>
-              <p className="warning-text">注销账号后，您的数据将在30天后永久删除</p>
-              <form onSubmit={handleDeactivate}>
-                <div className="form-group">
-                  <label>请输入密码确认注销</label>
-                  <input
-                    type="password"
-                    value={deactivatePassword}
-                    onChange={(e) => setDeactivatePassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <button type="submit" disabled={loading} className="btn-danger">
-                  {loading ? '处理中...' : '注销账号'}
-                </button>
-              </form>
             </div>
           </div>
         ) : activeTab === 'videos' ? (
@@ -1110,6 +1107,47 @@ const UserProfile = () => {
           </div>
         ) : null}
       </div>
+
+      {/* 注销账号对话框 */}
+      {showDeactivateDialog && (
+        <div className="modal-overlay" onClick={closeDeactivateDialog}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2 className="modal-title">注销账号</h2>
+            <p className="modal-warning">
+              注销账号后，您的数据将在30天后永久删除。确定要注销吗？
+            </p>
+            <form onSubmit={handleDeactivate}>
+              <div className="form-group">
+                <label>请输入密码确认注销</label>
+                <input
+                  type="password"
+                  value={deactivatePassword}
+                  onChange={(e) => setDeactivatePassword(e.target.value)}
+                  required
+                  autoFocus
+                />
+              </div>
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  onClick={closeDeactivateDialog}
+                  className="btn-cancel"
+                  disabled={loading}
+                >
+                  取消
+                </button>
+                <button
+                  type="submit"
+                  className="btn-confirm"
+                  disabled={loading}
+                >
+                  {loading ? '处理中...' : '确认注销'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

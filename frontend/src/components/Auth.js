@@ -1,7 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import './Auth.css';
+
+// 预设背景图片配置
+const PRESET_BACKGROUNDS = [
+  { id: 'bg1', name: '背景1', url: require('../assets/backgrounds/bg1.png') },
+  { id: 'bg2', name: '背景2', url: require('../assets/backgrounds/bg2.png') },
+  { id: 'bg3', name: '背景3', url: require('../assets/backgrounds/bg3.png') },
+  { id: 'bg4', name: '背景4', url: require('../assets/backgrounds/bg4.png') },
+  { id: 'bg5', name: '背景5', url: require('../assets/backgrounds/bg5.png') },
+  { id: 'bg6', name: '背景6', url: require('../assets/backgrounds/bg6.png') },
+  { id: 'bg7', name: '背景7', url: require('../assets/backgrounds/bg7.png') },
+  { id: 'bg8', name: '背景8', url: require('../assets/backgrounds/bg8.png') },
+];
 
 const Auth = ({ onLoginSuccess }) => {
   const navigate = useNavigate();
@@ -13,6 +25,23 @@ const Auth = ({ onLoginSuccess }) => {
     password: ''
   });
   const [loading, setLoading] = useState(false);
+
+  // 设置随机背景
+  useEffect(() => {
+    if (PRESET_BACKGROUNDS.length > 0) {
+      const randomIndex = Math.floor(Math.random() * PRESET_BACKGROUNDS.length);
+      const randomBg = PRESET_BACKGROUNDS[randomIndex];
+      document.body.style.backgroundImage = `url(${randomBg.url})`;
+      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundPosition = 'center';
+      document.body.style.backgroundAttachment = 'fixed';
+    }
+
+    // 组件卸载时清除背景
+    return () => {
+      document.body.style.backgroundImage = '';
+    };
+  }, []);
 
   const handleChange = (e) => {
     setFormData({

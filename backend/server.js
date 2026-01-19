@@ -10,10 +10,15 @@ const app = express();
 
 // 中间件
 app.use(cors({
-  origin: '*',
-  credentials: false,
+  origin: function(origin, callback) {
+    // 允许所有来源，或者你可以指定特定的域名
+    callback(null, true);
+  },
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 86400 // 预检请求缓存24小时
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
