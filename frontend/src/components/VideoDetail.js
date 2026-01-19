@@ -89,6 +89,13 @@ const VideoDetail = () => {
 
       // 确保 Canvas 尺寸正确
       danmakuEngineRef.current.init();
+
+      // 设置悬停操作回调函数
+      danmakuEngineRef.current.setCallbacks(
+        handleLikeDanmaku,
+        handleReportDanmaku
+      );
+
       danmakuEngineRef.current.start();
       // console.log('DanmakuEngine 初始化完成, Canvas尺寸:', canvasRef.current.width, 'x', canvasRef.current.height);
     }
@@ -348,6 +355,16 @@ const VideoDetail = () => {
     } catch (err) {
       console.error('取消点赞失败:', err);
       alert(err.response?.data?.error || '取消点赞失败');
+    }
+  };
+
+  const handleReportDanmaku = async (danmakuId) => {
+    try {
+      await api.post(`/danmaku/${danmakuId}/report`);
+      alert('举报成功，我们会尽快处理');
+    } catch (err) {
+      console.error('举报失败:', err);
+      alert(err.response?.data?.error || '举报失败');
     }
   };
 

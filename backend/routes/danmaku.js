@@ -142,6 +142,33 @@ router.delete('/:id/like', auth, async (req, res) => {
   }
 });
 
+// 请求审查弹幕
+router.post('/:id/report', auth, async (req, res) => {
+  try {
+    const danmaku = await Danmaku.findById(req.params.id);
+
+    if (!danmaku) {
+      return res.status(404).json({ error: '弹幕不存在' });
+    }
+
+    // 这里可以添加实际的审查逻辑，比如：
+    // 1. 记录举报信息到数据库
+    // 2. 发送通知给管理员
+    // 3. 自动检测违规内容
+
+    // 简单实现：记录举报（可以扩展 Danmaku 模型添加 reports 字段）
+    console.log(`用户 ${req.userId} 举报了弹幕 ${req.params.id}: "${danmaku.text}"`);
+
+    res.json({
+      message: '举报成功，我们会尽快处理',
+      success: true
+    });
+  } catch (error) {
+    console.error('举报失败:', error);
+    res.status(500).json({ error: '举报失败' });
+  }
+});
+
 // 语音识别接口
 router.post('/transcribe', auth, upload.single('audio'), async (req, res) => {
   try {

@@ -577,3 +577,90 @@
   box-shadow: 0 2px 8px rgba(255, 105, 180, 0.2);
 }
 
+/* 弹幕悬停操作面板样式 */
+.danmaku-action-panel {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: fadeInUp 0.2s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.danmaku-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.danmaku-action-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.danmaku-action-btn:active {
+  transform: translateY(0);
+}
+
+.danmaku-action-btn-like:hover {
+  background: rgba(255, 105, 180, 0.4);
+  border-color: rgba(255, 105, 180, 0.6);
+}
+
+.danmaku-action-btn-copy:hover {
+  background: rgba(52, 152, 219, 0.4);
+  border-color: rgba(52, 152, 219, 0.6);
+}
+
+.danmaku-action-btn-report:hover {
+  background: rgba(231, 76, 60, 0.4);
+  border-color: rgba(231, 76, 60, 0.6);
+}
+
+.danmaku-action-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.danmaku-action-text {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 提示框样式 */
+.danmaku-toast {
+  padding: 12px 24px;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
