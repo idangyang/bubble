@@ -19,7 +19,7 @@ router.post('/', auth, async (req, res) => {
     });
 
     await comment.save();
-    await comment.populate('user', 'username avatar');
+    await comment.populate('user', 'username avatar uid');
 
     res.status(201).json({ message: '评论发送成功', comment });
   } catch (error) {
@@ -32,7 +32,7 @@ router.post('/', auth, async (req, res) => {
 router.get('/video/:videoId', async (req, res) => {
   try {
     const comments = await Comment.find({ videoId: req.params.videoId })
-      .populate('user', 'username avatar')
+      .populate('user', 'username avatar uid')
       .sort({ createdAt: -1 });
 
     res.json({ comments });

@@ -79,13 +79,13 @@ const Auth = ({ onLoginSuccess }) => {
 
           {isLogin ? (
             <div className="form-group">
-              <label>用户名或邮箱</label>
+              <label>用户名/邮箱/UID</label>
               <input
                 type="text"
                 name="identifier"
                 value={formData.identifier}
                 onChange={handleChange}
-                placeholder="请输入用户名或邮箱"
+                placeholder="请输入用户名、邮箱或UID"
                 required
               />
             </div>

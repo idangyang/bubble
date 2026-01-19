@@ -57,7 +57,7 @@ class DanmakuEngine {
     return 0;
   }
 
-  add(text, color = '#FFFFFF', type = 'scroll', isVoice = false, audioUrl = null, likes = 0) {
+  add(text, color = '#FFFFFF', type = 'scroll', isVoice = false, audioUrl = null, likes = 0, id = null) {
     // 根据点赞数计算字号：每10个赞增加1个字号
     const calculatedFontSize = this.fontSize + Math.floor(likes / 10);
 
@@ -70,6 +70,7 @@ class DanmakuEngine {
     const trackIndex = this.findAvailableTrack(totalWidth);
 
     const danmaku = {
+      id,
       text,
       color,
       type,
@@ -298,6 +299,17 @@ class DanmakuEngine {
       lastDanmakuTime: 0,
       lastDanmakuX: this.canvas.width
     }));
+  }
+
+  updateDanmakuLikes(danmakuId, newLikes) {
+    this.danmakus.forEach(danmaku => {
+      if (danmaku.id === danmakuId) {
+        danmaku.likes = newLikes;
+        // 重新计算字号
+        const newFontSize = this.fontSize + Math.floor(newLikes / 10);
+        danmaku.fontSize = newFontSize;
+      }
+    });
   }
 
 }

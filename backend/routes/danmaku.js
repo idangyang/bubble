@@ -50,7 +50,7 @@ router.post('/', auth, upload.single('audio'), async (req, res) => {
 router.get('/video/:videoId', async (req, res) => {
   try {
     const danmakus = await Danmaku.find({ videoId: req.params.videoId })
-      .populate('user', 'username')
+      .populate('user', 'username uid')
       .sort({ time: 1 });
 
     res.json({ danmakus });
@@ -89,8 +89,8 @@ router.post('/:id/like', auth, async (req, res) => {
       return res.status(404).json({ error: '弹幕不存在' });
     }
 
-    // 检查用户是否已经点赞
-    const alreadyLiked = danmaku.likedBy.includes(req.userId);
+    // 检查用户是否已经点赞（使用字符串比较）
+    const alreadyLiked = danmaku.likedBy.some(id => id.toString() === req.userId.toString());
 
     if (alreadyLiked) {
       return res.status(400).json({ error: '已经点赞过此弹幕' });
@@ -120,8 +120,8 @@ router.delete('/:id/like', auth, async (req, res) => {
       return res.status(404).json({ error: '弹幕不存在' });
     }
 
-    // 检查用户是否已经点赞
-    const likeIndex = danmaku.likedBy.indexOf(req.userId);
+    // 检查用户是否已经点赞（使用字符串比较）
+    const likeIndex = danmaku.likedBy.findIndex(id => id.toString() === req.userId.toString());
 
     if (likeIndex === -1) {
       return res.status(400).json({ error: '尚未点赞此弹幕' });

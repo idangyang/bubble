@@ -192,7 +192,7 @@ router.get('/search', async (req, res) => {
 
     // 获取所有匹配的视频（不在数据库层面排序和分页）
     const allVideos = await Video.find(searchQuery)
-      .populate('uploader', 'username avatar');
+      .populate('uploader', 'username avatar uid');
 
     // 使用自定义排序函数：先按播放次数，再按字母顺序
     const sortedVideos = sortSearchResults(allVideos);
@@ -220,7 +220,7 @@ router.get('/', async (req, res) => {
   try {
     const { page = 1, limit = 20 } = req.query;
     const videos = await Video.find()
-      .populate('uploader', 'username avatar')
+      .populate('uploader', 'username avatar uid')
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -241,7 +241,7 @@ router.get('/', async (req, res) => {
 router.get('/my-videos', auth, async (req, res) => {
   try {
     const videos = await Video.find({ uploader: req.userId })
-      .populate('uploader', 'username avatar')
+      .populate('uploader', 'username avatar uid')
       .sort({ createdAt: -1 });
 
     res.json({ videos });
@@ -255,7 +255,7 @@ router.get('/my-videos', auth, async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const video = await Video.findById(req.params.id)
-      .populate('uploader', 'username avatar');
+      .populate('uploader', 'username avatar uid');
 
     if (!video) {
       return res.status(404).json({ error: '视频不存在' });
@@ -418,7 +418,7 @@ router.get('/admin/user-videos/:userId', auth, async (req, res) => {
     }
 
     const videos = await Video.find({ uploader: req.params.userId })
-      .populate('uploader', 'username')
+      .populate('uploader', 'username uid')
       .sort({ createdAt: -1 });
 
     res.json({ videos });

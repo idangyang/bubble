@@ -552,7 +552,7 @@ const VideoDetail = () => {
             <h1 className="video-title">{video.title}</h1>
             <p className="video-description">{video.description || '暂无描述'}</p>
             <div className="video-meta">
-              <span>上传者: {video.uploader?.username || '未知用户'}</span>
+              <span>上传者: {video.uploader?.username || '未知用户'} {video.uploader?.uid && `(UID: ${video.uploader.uid})`}</span>
               <span>观看次数: {video.views}</span>
             </div>
           </div>
@@ -619,7 +619,10 @@ const VideoDetail = () => {
             {comments.map((comment) => (
               <div key={comment._id} className="comment-item">
                 <div className="comment-header">
-                  <span className="comment-author">{comment.user?.username || '未知用户'}</span>
+                  <span className="comment-author">
+                    {comment.user?.username || '未知用户'}
+                    {comment.user?.uid && ` (UID: ${comment.user.uid})`}
+                  </span>
                   <span className="comment-time">
                     {new Date(comment.createdAt).toLocaleString('zh-CN')}
                   </span>
@@ -664,6 +667,11 @@ const VideoDetail = () => {
                       <span className="danmaku-time">
                         {Math.floor(danmaku.time / 60)}:{String(Math.floor(danmaku.time % 60)).padStart(2, '0')}
                       </span>
+                      {danmaku.user?.uid && (
+                        <span className="danmaku-user">
+                          UID: {danmaku.user.uid}
+                        </span>
+                      )}
                     </div>
                     <div className="danmaku-actions">
                       <button

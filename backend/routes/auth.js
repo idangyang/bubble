@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
+const { generateMonthlyUid } = require('../utils/uidGenerator');
 
 // 注册
 router.post('/register', [
@@ -24,7 +25,10 @@ router.post('/register', [
       return res.status(400).json({ error: '用户名或邮箱已存在' });
     }
 
-    const user = new User({ username, email, password });
+    // 生成月份格式的 UID
+    const uid = await generateMonthlyUid();
+
+    const user = new User({ username, email, password, uid });
     await user.save();
 
     const token = jwt.sign(
@@ -38,6 +42,7 @@ router.post('/register', [
       token,
       user: {
         id: user._id,
+        uid: user.uid,
         username: user.username,
         email: user.email,
         avatar: user.avatar,
@@ -51,7 +56,7 @@ router.post('/register', [
 
 // 登录
 router.post('/login', [
-  body('identifier').notEmpty().withMessage('请输入用户名或邮箱'),
+  body('identifier').notEmpty().withMessage('请输入用户名、邮箱或UID'),
   body('password').notEmpty().withMessage('请输入密码')
 ], async (req, res) => {
   try {
@@ -62,21 +67,22 @@ router.post('/login', [
 
     const { identifier, password } = req.body;
 
-    // 尝试通过邮箱或用户名查找用户
+    // 尝试通过邮箱、用户名或 UID 查找用户
     const user = await User.findOne({
       $or: [
         { email: identifier },
-        { username: identifier }
+        { username: identifier },
+        { uid: identifier }
       ]
     });
 
     if (!user) {
-      return res.status(401).json({ error: '用户名/邮箱或密码错误' });
+      return res.status(401).json({ error: '用户名/邮箱/UID或密码错误' });
     }
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(401).json({ error: '用户名/邮箱或密码错误' });
+      return res.status(401).json({ error: '用户名/邮箱/UID或密码错误' });
     }
 
     const token = jwt.sign(
@@ -90,6 +96,7 @@ router.post('/login', [
       token,
       user: {
         id: user._id,
+        uid: user.uid,
         username: user.username,
         email: user.email,
         avatar: user.avatar,
