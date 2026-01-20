@@ -589,6 +589,19 @@
   animation: fadeInUp 0.2s ease-out;
 }
 
+/* 弹幕卡片样式 */
+.danmaku-action-card {
+  display: flex;
+  gap: 6px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  animation: fadeInUp 0.2s ease-out;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -603,52 +616,54 @@
 .danmaku-action-btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
-  padding: 6px 12px;
-  background: rgba(255, 255, 255, 0.15);
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 6px;
-  color: white;
-  font-size: 13px;
-  font-weight: 600;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
 }
 
+.danmaku-action-btn svg {
+  flex-shrink: 0;
+}
+
 .danmaku-action-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(15px);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.05);
 }
 
 .danmaku-action-btn:active {
-  transform: translateY(0);
+  transform: scale(0.95);
 }
 
 .danmaku-action-btn-like:hover {
-  background: rgba(255, 105, 180, 0.4);
-  border-color: rgba(255, 105, 180, 0.6);
+  background: rgba(255, 105, 180, 0.3);
+  color: #ff69b4;
 }
 
 .danmaku-action-btn-copy:hover {
-  background: rgba(52, 152, 219, 0.4);
-  border-color: rgba(52, 152, 219, 0.6);
+  background: rgba(52, 152, 219, 0.3);
+  color: #3498db;
 }
 
 .danmaku-action-btn-report:hover {
-  background: rgba(231, 76, 60, 0.4);
-  border-color: rgba(231, 76, 60, 0.6);
+  background: rgba(231, 76, 60, 0.3);
+  color: #e74c3c;
 }
 
-.danmaku-action-icon {
-  font-size: 16px;
-  line-height: 1;
-}
-
-.danmaku-action-text {
-  font-size: 12px;
-  font-weight: 600;
+.danmaku-action-count {
+  font-size: 11px;
+  margin-left: 2px;
 }
 
 /* 提示框样式 */

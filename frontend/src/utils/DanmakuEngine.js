@@ -51,16 +51,7 @@ class DanmakuEngine {
 
   // 设置鼠标事件监听
   setupMouseEvents() {
-    // 添加延迟隐藏的定时器
-    this.hideTimer = null;
-
     this.canvas.addEventListener('mousemove', (e) => {
-      // 清除隐藏定时器
-      if (this.hideTimer) {
-        clearTimeout(this.hideTimer);
-        this.hideTimer = null;
-      }
-
       const rect = this.canvas.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
@@ -87,18 +78,6 @@ class DanmakuEngine {
           this.canvas.style.cursor = 'default';
         }
       }
-    });
-
-    this.canvas.addEventListener('mouseleave', () => {
-      // 延迟隐藏，给用户时间移动到操作面板
-      this.hideTimer = setTimeout(() => {
-        if (this.hoveredDanmaku && !this.isPanelHovered) {
-          this.hoveredDanmaku.isPaused = false;
-          this.hoveredDanmaku = null;
-          this.hideActionPanel();
-          this.canvas.style.cursor = 'default';
-        }
-      }, 500);
     });
   }
 
@@ -143,32 +122,27 @@ class DanmakuEngine {
     return 0;
   }
 
-  // 显示操作面板
+  // 显示操作面板（卡片式）
   showActionPanel(danmaku) {
     if (!danmaku.id) return; // 没有 ID 的弹幕不显示操作面板
 
-    // 创建操作面板
+    // 创建卡片容器
     if (!this.actionPanel) {
       this.actionPanel = document.createElement('div');
-      this.actionPanel.className = 'danmaku-action-panel';
+      this.actionPanel.className = 'danmaku-action-card';
       this.actionPanel.style.position = 'absolute';
       this.actionPanel.style.pointerEvents = 'auto';
       this.actionPanel.style.zIndex = '100';
       this.buttonContainer.appendChild(this.actionPanel);
 
-      // 添加操作面板的鼠标事件监听
+      // 添加卡片的鼠标事件监听
       this.actionPanel.addEventListener('mouseenter', () => {
         this.isPanelHovered = true;
-        // 清除隐藏定时器
-        if (this.hideTimer) {
-          clearTimeout(this.hideTimer);
-          this.hideTimer = null;
-        }
       });
 
       this.actionPanel.addEventListener('mouseleave', () => {
         this.isPanelHovered = false;
-        // 鼠标离开操作面板时，隐藏面板并恢复弹幕
+        // 鼠标离开卡片时，隐藏面板并恢复弹幕
         if (this.hoveredDanmaku) {
           this.hoveredDanmaku.isPaused = false;
           this.hoveredDanmaku = null;
@@ -178,12 +152,12 @@ class DanmakuEngine {
       });
     }
 
-    // 计算面板位置（弹幕下方）
-    const panelX = danmaku.x;
-    const panelY = danmaku.y + 10;
+    // 计算卡片位置（弹幕下方）
+    const cardX = danmaku.x;
+    const cardY = danmaku.y + 8; // 弹幕下方留出间距
 
-    this.actionPanel.style.left = `${panelX}px`;
-    this.actionPanel.style.top = `${panelY}px`;
+    this.actionPanel.style.left = `${cardX}px`;
+    this.actionPanel.style.top = `${cardY}px`;
     this.actionPanel.style.display = 'flex';
 
     // 清空并重新创建按钮
@@ -225,6 +199,7 @@ class DanmakuEngine {
       }
     );
 
+    // 将按钮直接添加到卡片
     this.actionPanel.appendChild(likeBtn);
     this.actionPanel.appendChild(copyBtn);
     this.actionPanel.appendChild(reportBtn);
@@ -242,27 +217,36 @@ class DanmakuEngine {
     const button = document.createElement('button');
     button.className = `danmaku-action-btn danmaku-action-btn-${type}`;
 
-    // 创建图标
-    const icon = document.createElement('span');
-    icon.className = 'danmaku-action-icon';
-
-    // 根据类型设置图标
+    // 创建 SVG 图标
+    let svgIcon = '';
     if (type === 'like') {
-      icon.innerHTML = '👍';
+      // 点赞图标（心形）
+      svgIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+      </svg>`;
     } else if (type === 'copy') {
-      icon.innerHTML = '📋';
+      // 复制图标
+      svgIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+      </svg>`;
     } else if (type === 'report') {
-      icon.innerHTML = '⚠️';
+      // 举报图标（警告标志）
+      svgIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>`;
     }
 
-    button.appendChild(icon);
+    button.innerHTML = svgIcon;
 
-    // 如果有文本（如点赞数），添加文本
-    if (text) {
-      const textSpan = document.createElement('span');
-      textSpan.className = 'danmaku-action-text';
-      textSpan.textContent = text;
-      button.appendChild(textSpan);
+    // 如果是点赞按钮且有点赞数，添加数字显示
+    if (type === 'like' && text) {
+      const countSpan = document.createElement('span');
+      countSpan.className = 'danmaku-action-count';
+      countSpan.textContent = text;
+      button.appendChild(countSpan);
     }
 
     button.addEventListener('click', (e) => {
